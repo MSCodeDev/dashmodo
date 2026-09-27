@@ -4,6 +4,7 @@ node_modules
 dist
 client/dist
 server/dist
+*.tsbuildinfo
 
 # OS
 .DS_Store
