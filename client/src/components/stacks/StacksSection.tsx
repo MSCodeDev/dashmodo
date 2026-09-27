@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Loader, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Loader, SimpleGrid, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useStacks } from '../../hooks/useStacks';
-import { StackTable } from './StackTable';
+import { StackCard } from './StackCard';
 import { ApiErrorAlert } from '../common/ApiErrorAlert';
 
 export function StacksSection() {
@@ -37,7 +37,13 @@ export function StacksSection() {
 				<Text c="dimmed">No stacks match "{search}".</Text>
 			) : null}
 
-			{filtered.length > 0 ? <StackTable stacks={filtered} /> : null}
+			{filtered.length > 0 ? (
+				<SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+					{filtered.map((stack) => (
+						<StackCard key={stack.id} stack={stack} />
+					))}
+				</SimpleGrid>
+			) : null}
 		</Stack>
 	);
 }

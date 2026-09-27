@@ -1,20 +1,25 @@
 import { Group, Progress, Text } from '@mantine/core';
+import type { Icon } from '@tabler/icons-react';
 import { statColor } from '../../lib/colors';
 
 interface StatBarProps {
 	label: string;
 	percent: number;
 	detail?: string;
+	icon: Icon;
 }
 
-export function StatBar({ label, percent, detail }: StatBarProps) {
+export function StatBar({ label, percent, detail, icon: IconComponent }: StatBarProps) {
 	const clamped = Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : 0;
 	return (
 		<div>
 			<Group justify="space-between" mb={2}>
-				<Text size="xs" c="dimmed">
-					{label}
-				</Text>
+				<Group gap={6}>
+					<IconComponent size={14} />
+					<Text size="xs" c="dimmed">
+						{label}
+					</Text>
+				</Group>
 				<Text size="xs" c="dimmed">
 					{detail ?? `${clamped.toFixed(0)}%`}
 				</Text>

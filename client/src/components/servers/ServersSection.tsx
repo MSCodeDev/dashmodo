@@ -1,4 +1,4 @@
-import { Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Loader, Stack, Text, Title } from '@mantine/core';
 import { useServers } from '../../hooks/useServers';
 import { ServerCard } from './ServerCard';
 import { ApiErrorAlert } from '../common/ApiErrorAlert';
@@ -17,11 +17,11 @@ export function ServersSection() {
 			{data && data.length === 0 ? <Text c="dimmed">No servers found.</Text> : null}
 
 			{data && data.length > 0 ? (
-				<SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md">
+				<Stack gap="md">
 					{data.map((server) => (
 						<ServerCard key={server.id} server={server} />
 					))}
-				</SimpleGrid>
+				</Stack>
 			) : null}
 		</Stack>
 	);

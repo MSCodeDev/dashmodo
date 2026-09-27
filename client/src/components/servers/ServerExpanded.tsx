@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { Divider, Loader, Select, SimpleGrid, Stack, Text } from '@mantine/core';
+import { IconCpu, IconDatabase, IconDeviceSdCard } from '@tabler/icons-react';
 import { useServerDetail, useServerHistory } from '../../hooks/useServers';
 import { StatBar } from '../common/StatBar';
 
@@ -35,9 +36,10 @@ export function ServerExpanded({ serverId, active }: { serverId: string; active:
 		<Stack mt="md" gap="sm">
 			<Divider label="Current" />
 			{stats ? (
-				<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-					<StatBar label="CPU" percent={stats.cpu_perc} />
+				<SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
+					<StatBar icon={IconCpu} label="CPU" percent={stats.cpu_perc} />
 					<StatBar
+						icon={IconDatabase}
 						label="Memory"
 						percent={(stats.mem_used_gb / stats.mem_total_gb) * 100}
 						detail={`${stats.mem_used_gb.toFixed(1)} / ${stats.mem_total_gb.toFixed(1)} GB`}
@@ -45,6 +47,7 @@ export function ServerExpanded({ serverId, active }: { serverId: string; active:
 					{stats.disks.map((d) => (
 						<StatBar
 							key={d.mount}
+							icon={IconDeviceSdCard}
 							label={`Disk (${d.mount})`}
 							percent={(d.used_gb / d.total_gb) * 100}
 							detail={`${d.used_gb.toFixed(0)} / ${d.total_gb.toFixed(0)} GB`}
