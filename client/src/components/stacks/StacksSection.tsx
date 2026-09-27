@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Loader, Stack, Text, TextInput, Title } from '@mantine/core';
-import { useStacks } from '../hooks/useStacks';
-import { StackTable } from '../components/stacks/StackTable';
-import { ApiErrorAlert } from '../components/common/ApiErrorAlert';
+import { useStacks } from '../../hooks/useStacks';
+import { StackTable } from './StackTable';
+import { ApiErrorAlert } from '../common/ApiErrorAlert';
 
-export function Stacks() {
+export function StacksSection() {
 	const { data, isLoading, isError, error } = useStacks();
 	const [search, setSearch] = useState('');
 

@@ -106,6 +106,10 @@ export interface AdminSession {
 	passwordRequired: boolean;
 }
 
+export interface AppConfig {
+	komodoUrl: string;
+}
+
 export interface StackSettingsRow {
 	id: string;
 	name: string;

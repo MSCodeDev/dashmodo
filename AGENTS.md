@@ -4,7 +4,7 @@ A companion homelab dashboard for [Komodo](https://komo.do). Talks to a Komodo i
 
 ## Stack
 
-- `client/` — React 19 + Vite + TypeScript + Mantine + Recharts + TanStack Query + react-router-dom. Chosen to match Komodo's own UI stack so chart/data-shaping logic can be ported from it.
+- `client/` — React 19 + Vite + TypeScript + Mantine + Recharts + TanStack Query. Chosen to match Komodo's own UI stack so chart/data-shaping logic can be ported from it. No router — it's a single page (top nav + Servers section + Stacks section), with Settings as a modal, not a route.
 - `server/` — Node + TypeScript + Express + drizzle-orm + better-sqlite3. A BFF: it's the only thing that talks to Komodo (via the official `komodo_client` npm package), so the Komodo API key/secret never reach the browser. Also owns a small SQLite DB for admin settings.
 - npm workspaces (`client`, `server`) at the root. `npm run dev` at the root runs both together (via `concurrently`); `npm run dev -w client` / `-w server` runs one.
 

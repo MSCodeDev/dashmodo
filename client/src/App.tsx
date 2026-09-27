@@ -1,19 +1,25 @@
-import { Route, Routes } from 'react-router-dom';
-import { Shell } from './components/layout/Shell';
-import { Dashboard } from './pages/Dashboard';
-import { Servers } from './pages/Servers';
-import { Stacks } from './pages/Stacks';
-import { Settings } from './pages/Settings';
+import { useState } from 'react';
+import { AppShell, Stack } from '@mantine/core';
+import { TopNav } from './components/layout/TopNav';
+import { ServersSection } from './components/servers/ServersSection';
+import { StacksSection } from './components/stacks/StacksSection';
+import { SettingsModal } from './components/settings/SettingsModal';
 
 export default function App() {
+	const [settingsOpen, setSettingsOpen] = useState(false);
+
 	return (
-		<Routes>
-			<Route element={<Shell />}>
-				<Route index element={<Dashboard />} />
-				<Route path="servers" element={<Servers />} />
-				<Route path="stacks" element={<Stacks />} />
-				<Route path="settings" element={<Settings />} />
-			</Route>
-		</Routes>
+		<>
+			<AppShell header={{ height: 56 }} padding="md">
+				<TopNav onOpenSettings={() => setSettingsOpen(true)} />
+				<AppShell.Main>
+					<Stack gap="xl">
+						<ServersSection />
+						<StacksSection />
+					</Stack>
+				</AppShell.Main>
+			</AppShell>
+			<SettingsModal opened={settingsOpen} onClose={() => setSettingsOpen(false)} />
+		</>
 	);
 }

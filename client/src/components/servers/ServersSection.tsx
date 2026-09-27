@@ -1,9 +1,9 @@
 import { Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { useServers } from '../hooks/useServers';
-import { ServerCard } from '../components/servers/ServerCard';
-import { ApiErrorAlert } from '../components/common/ApiErrorAlert';
+import { useServers } from '../../hooks/useServers';
+import { ServerCard } from './ServerCard';
+import { ApiErrorAlert } from '../common/ApiErrorAlert';
 
-export function Servers() {
+export function ServersSection() {
 	const { data, isLoading, isError, error } = useServers();
 
 	return (

@@ -6,6 +6,7 @@ import { serversRouter } from './routes/servers.js';
 import { stacksRouter } from './routes/stacks.js';
 import { adminRouter } from './routes/admin.js';
 import { settingsRouter } from './routes/settings.js';
+import { env } from './env.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // server/src/app.ts (dev) or server/dist/app.js (prod) — either way, two levels up + client/dist.
@@ -18,6 +19,11 @@ app.use(cookieParser());
 
 app.get('/api/health', (_req, res) => {
 	res.json({ ok: true });
+});
+
+// Not a secret (unlike the API key/secret) — safe to expose so the client can link to Komodo.
+app.get('/api/config', (_req, res) => {
+	res.json({ komodoUrl: env.KOMODO_URL });
 });
 
 app.use('/api/servers', serversRouter);
