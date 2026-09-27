@@ -1,0 +1,26 @@
+node_modules
+
+# Build output
+dist
+client/dist
+server/dist
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Vite
+vite.config.ts.timestamp-*
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Planning / reference artifacts — never enters git history
+.project/
