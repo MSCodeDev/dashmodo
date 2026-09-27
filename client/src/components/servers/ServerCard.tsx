@@ -1,7 +1,8 @@
-import { Card, Collapse, Group, SimpleGrid, Text } from '@mantine/core';
+import { Card, Collapse, Group, SimpleGrid, Text, useComputedColorScheme } from '@mantine/core';
 import { Cpu, Database, MemoryStick } from 'lucide-react';
 import { serverStateColor } from '../../lib/colors';
 import { serverStateIcon } from '../../lib/statusIcons';
+import { GLASS } from '../../lib/glass';
 import { StatBar } from '../common/StatBar';
 import { StatusIcon } from '../common/StatusIcon';
 import { ServerExpanded } from './ServerExpanded';
@@ -9,14 +10,19 @@ import type { ServerListItem } from '../../lib/types';
 
 export function ServerCard({ server, expanded }: { server: ServerListItem; expanded: boolean }) {
 	const stats = server.info.stats;
+	const scheme = useComputedColorScheme('dark');
+	const glass = GLASS.card[scheme];
 
 	return (
 		<Card
 			withBorder
 			padding="md"
 			radius="md"
-			bg="#15171b"
-			style={{ borderColor: '#1d1f25' }}
+			style={{
+				...glass,
+				backdropFilter: 'blur(10px)',
+				WebkitBackdropFilter: 'blur(10px)'
+			}}
 		>
 			<Group gap="xs" wrap="nowrap" mb="xs">
 				<StatusIcon

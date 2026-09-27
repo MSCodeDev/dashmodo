@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { ActionIcon, Group, Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { ChevronDown, ChevronUp, Server } from 'lucide-react';
 import { useServers } from '../../hooks/useServers';
+import { useConfig } from '../../hooks/useConfig';
 import { ServerCard } from './ServerCard';
 import { ApiErrorAlert } from '../common/ApiErrorAlert';
 
 export function ServersSection() {
 	const { data, isLoading, isError, error } = useServers();
 	const [expanded, setExpanded] = useState(false);
+	const columns = useConfig().data?.appSettings.serversColumns ?? 2;
 
 	return (
 		<Stack>
@@ -35,7 +37,7 @@ export function ServersSection() {
 			{data && data.length === 0 ? <Text c="dimmed">No servers found.</Text> : null}
 
 			{data && data.length > 0 ? (
-				<SimpleGrid cols={{ base: 1, md: data.length === 1 ? 1 : 2 }} spacing="md">
+				<SimpleGrid cols={{ base: 1, md: Math.min(columns, data.length) }} spacing="md">
 					{data.map((server) => (
 						<ServerCard key={server.id} server={server} expanded={expanded} />
 					))}

@@ -1,18 +1,30 @@
 import { useState } from 'react';
 import { AppShell, Stack } from '@mantine/core';
 import { TopNav } from './components/layout/TopNav';
+import { AppSettingsEffects } from './components/layout/AppSettingsEffects';
+import { BackgroundGlow } from './components/layout/BackgroundGlow';
 import { ServersSection } from './components/servers/ServersSection';
 import { StacksSection } from './components/stacks/StacksSection';
 import { SettingsModal } from './components/settings/SettingsModal';
+import { useConfig } from './hooks/useConfig';
 
 export default function App() {
 	const [settingsOpen, setSettingsOpen] = useState(false);
+	const themeColor = useConfig().data?.appSettings.themeColor;
 
 	return (
 		<>
-			<AppShell header={{ height: 56 }} padding="md">
+			<AppSettingsEffects />
+			<BackgroundGlow color={themeColor} />
+			<AppShell header={{ height: 56 }} padding="xl">
 				<TopNav onOpenSettings={() => setSettingsOpen(true)} />
-				<AppShell.Main>
+				<AppShell.Main
+					style={{
+						position: 'relative',
+						zIndex: 1,
+						paddingTop: 'calc(21px + var(--mantine-spacing-sm))'
+					}}
+				>
 					<Stack gap="xl">
 						<ServersSection />
 						<StacksSection />

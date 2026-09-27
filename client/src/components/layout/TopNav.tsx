@@ -1,15 +1,28 @@
-import { AppShell, Button, Group, Title } from '@mantine/core';
+import { AppShell, Button, Group, Title, useComputedColorScheme } from '@mantine/core';
 import { ExternalLink, Settings as SettingsIcon } from 'lucide-react';
 import { useConfig } from '../../hooks/useConfig';
+import { GLASS } from '../../lib/glass';
+import { Logo } from './Logo';
 
 export function TopNav({ onOpenSettings }: { onOpenSettings: () => void }) {
 	const config = useConfig();
+	const scheme = useComputedColorScheme('dark');
+	const glass = GLASS.header[scheme];
 
 	return (
-		<AppShell.Header bg="dark.6" style={{ borderBottom: '1px solid var(--mantine-color-dark-4)' }}>
+		<AppShell.Header
+			style={{
+				backgroundColor: glass.backgroundColor,
+				backdropFilter: 'blur(14px)',
+				WebkitBackdropFilter: 'blur(14px)',
+				borderBottom: `1px solid ${glass.borderColor}`,
+				position: 'relative',
+				zIndex: 1
+			}}
+		>
 			<Group h="100%" px="md" justify="space-between">
 				<Group gap="xs">
-					<img src="/logo.png" alt="" width={28} height={28} />
+					<Logo color={config.data?.appSettings.themeColor ?? undefined} size={28} />
 					<Title order={3} fw={700}>
 						dashmodo
 					</Title>
