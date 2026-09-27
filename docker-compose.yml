@@ -1,0 +1,20 @@
+services:
+  dashmodo:
+    build: .
+    ports:
+      - '4000:4000'
+    environment:
+      KOMODO_URL: ${KOMODO_URL}
+      KOMODO_API_KEY: ${KOMODO_API_KEY}
+      KOMODO_API_SECRET: ${KOMODO_API_SECRET}
+      PORT: 4000
+      DASHMODO_DB_PATH: /app/data/dashmodo.sqlite
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:-}
+      DASHMODO_PORT_DENYLIST: ${DASHMODO_PORT_DENYLIST:-}
+    volumes:
+      - dashmodo-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  dashmodo-data:
