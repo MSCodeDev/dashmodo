@@ -99,6 +99,8 @@ export interface StackListItem {
 		status?: string;
 	};
 	link: ResolvedLink;
+	/** selfh.st/icons reference — override if set, else auto-derived from the stack name. */
+	icon: string;
 }
 
 export interface AdminSession {
@@ -117,6 +119,8 @@ export interface StackSettingsRow {
 	state: StackState;
 	hidden: boolean;
 	linkOverride: string | null;
+	iconOverride: string | null;
+	defaultIcon: string;
 }
 
 export interface ServerSettingsRow {

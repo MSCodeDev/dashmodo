@@ -4,6 +4,7 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { resourceSettings } from '../db/schema.js';
 import { cachedRead, normalizeKomodoError } from '../lib/komodo.js';
+import { slugifyIconRef } from '../lib/icons.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 
 export const settingsRouter = Router();
@@ -12,8 +13,13 @@ settingsRouter.use(requireAdmin);
 
 const updateSchema = z.object({
 	hidden: z.boolean().optional(),
-	linkOverride: z.string().nullable().optional()
+	linkOverride: z.string().nullable().optional(),
+	iconOverride: z.string().nullable().optional()
 });
+
+function normalize(value: string | null | undefined) {
+	return value === '' ? null : value;
+}
 
 async function upsertSetting(
 	resourceType: 'stack' | 'server',
@@ -21,7 +27,8 @@ async function upsertSetting(
 	data: z.infer<typeof updateSchema>
 ) {
 	const { hidden } = data;
-	const linkOverride = data.linkOverride === '' ? null : data.linkOverride;
+	const linkOverride = normalize(data.linkOverride);
+	const iconOverride = normalize(data.iconOverride);
 
 	const where = and(
 		eq(resourceSettings.resourceType, resourceType),
@@ -34,7 +41,8 @@ async function upsertSetting(
 			resourceType,
 			resourceId,
 			hidden: hidden ?? false,
-			linkOverride: linkOverride ?? null
+			linkOverride: linkOverride ?? null,
+			iconOverride: iconOverride ?? null
 		});
 	} else {
 		await db
@@ -42,6 +50,7 @@ async function upsertSetting(
 			.set({
 				...(hidden !== undefined ? { hidden } : {}),
 				...(linkOverride !== undefined ? { linkOverride } : {}),
+				...(iconOverride !== undefined ? { iconOverride } : {}),
 				updatedAt: new Date()
 			})
 			.where(where);
@@ -61,7 +70,9 @@ settingsRouter.get('/stacks', async (_req, res) => {
 			server_name: s.info.server_name,
 			state: s.info.state,
 			hidden: settingsById.get(s.id)?.hidden ?? false,
-			linkOverride: settingsById.get(s.id)?.linkOverride ?? null
+			linkOverride: settingsById.get(s.id)?.linkOverride ?? null,
+			iconOverride: settingsById.get(s.id)?.iconOverride ?? null,
+			defaultIcon: slugifyIconRef(s.name)
 		}));
 		res.json(merged);
 	} catch (err) {

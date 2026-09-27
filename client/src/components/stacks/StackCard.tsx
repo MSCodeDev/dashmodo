@@ -1,6 +1,6 @@
-import { Badge, Card, Group, Stack, Text } from '@mantine/core';
-import { IconExternalLink } from '@tabler/icons-react';
+import { Avatar, Badge, Card, Group, Stack, Text } from '@mantine/core';
 import { stackStateColor } from '../../lib/colors';
+import { selfhstIconUrl } from '../../lib/icons';
 import type { StackListItem } from '../../lib/types';
 
 export function StackCard({ stack }: { stack: StackListItem }) {
@@ -22,14 +22,18 @@ export function StackCard({ stack }: { stack: StackListItem }) {
 				opacity: hasLink ? 1 : 0.7
 			}}
 		>
-			<Group justify="space-between" wrap="nowrap" align="flex-start">
-				<Stack gap={2}>
-					<Text fw={600}>{stack.name}</Text>
+			<Group wrap="nowrap" align="center">
+				<Avatar src={selfhstIconUrl(stack.icon)} radius="sm" size="md">
+					{stack.name.slice(0, 2).toUpperCase()}
+				</Avatar>
+				<Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+					<Text fw={600} truncate>
+						{stack.name}
+					</Text>
 					<Text size="xs" c="dimmed">
 						{stack.info.server_name ?? '—'}
 					</Text>
 				</Stack>
-				{hasLink ? <IconExternalLink size={16} opacity={0.6} /> : null}
 			</Group>
 
 			<Group justify="space-between" mt="sm" align="center">

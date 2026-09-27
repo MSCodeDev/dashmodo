@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Badge, Button, Card, Collapse, Group, SimpleGrid, Text } from '@mantine/core';
-import { IconCpu, IconDatabase, IconDeviceSdCard } from '@tabler/icons-react';
+import { ActionIcon, Badge, Card, Collapse, Group, SimpleGrid, Text } from '@mantine/core';
+import { IconChevronDown, IconChevronUp, IconCpu, IconDatabase, IconDeviceSdCard } from '@tabler/icons-react';
 import { serverStateColor } from '../../lib/colors';
 import { StatBar } from '../common/StatBar';
 import { ServerExpanded } from './ServerExpanded';
@@ -24,9 +24,14 @@ export function ServerCard({ server }: { server: ServerListItem }) {
 						</Text>
 					) : null}
 				</Group>
-				<Button size="xs" variant="subtle" onClick={() => setExpanded((v) => !v)}>
-					{expanded ? 'Collapse' : 'Expand'}
-				</Button>
+				<ActionIcon
+					variant="subtle"
+					color="gray"
+					aria-label={expanded ? 'Collapse' : 'Expand'}
+					onClick={() => setExpanded((v) => !v)}
+				>
+					{expanded ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
+				</ActionIcon>
 			</Group>
 
 			{stats ? (

@@ -7,6 +7,7 @@ export const resourceSettings = sqliteTable(
 		resourceId: text('resource_id').notNull(),
 		hidden: integer('hidden', { mode: 'boolean' }).notNull().default(false),
 		linkOverride: text('link_override'),
+		iconOverride: text('icon_override'),
 		updatedAt: integer('updated_at', { mode: 'timestamp' })
 			.notNull()
 			.$defaultFn(() => new Date())

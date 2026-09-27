@@ -4,6 +4,7 @@ import { db } from '../db/index.js';
 import { resourceSettings } from '../db/schema.js';
 import { cachedRead, normalizeKomodoError } from '../lib/komodo.js';
 import { resolveStackLink, type ResolvedLink } from '../lib/links.js';
+import { slugifyIconRef } from '../lib/icons.js';
 
 export const stacksRouter = Router();
 
@@ -67,7 +68,8 @@ stacksRouter.get('/', async (_req, res) => {
 					setting?.linkOverride,
 					serverLinkOverride
 				);
-				return { ...stack, link };
+				const icon = setting?.iconOverride || slugifyIconRef(stack.name);
+				return { ...stack, link, icon };
 			})
 		);
 
@@ -120,7 +122,9 @@ stacksRouter.get('/:id', async (req, res) => {
 					serverLinkOverride
 				});
 
-		res.json({ stack, services, link });
+		const icon = setting?.iconOverride || slugifyIconRef(stack.name);
+
+		res.json({ stack, services, link, icon });
 	} catch (err) {
 		const e = normalizeKomodoError(err);
 		res.status(e.status).json({ error: e.message });

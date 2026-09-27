@@ -12,8 +12,15 @@ export function useSettingsStacks() {
 export function useUpdateStackSettings() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: ({ id, ...body }: { id: string; hidden?: boolean; linkOverride?: string | null }) =>
-			api.put(`/settings/stacks/${id}`, body),
+		mutationFn: ({
+			id,
+			...body
+		}: {
+			id: string;
+			hidden?: boolean;
+			linkOverride?: string | null;
+			iconOverride?: string | null;
+		}) => api.put(`/settings/stacks/${id}`, body),
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: ['settings-stacks'] });
 			qc.invalidateQueries({ queryKey: ['stacks'] });
