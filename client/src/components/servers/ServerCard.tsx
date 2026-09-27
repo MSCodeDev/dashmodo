@@ -1,37 +1,29 @@
-import { useState } from 'react';
-import { ActionIcon, Badge, Card, Collapse, Group, SimpleGrid, Text } from '@mantine/core';
-import { IconChevronDown, IconChevronUp, IconCpu, IconDatabase, IconDeviceSdCard } from '@tabler/icons-react';
+import { Card, Collapse, Group, SimpleGrid, Text } from '@mantine/core';
+import { IconCpu, IconDatabase, IconDeviceSdCard } from '@tabler/icons-react';
 import { serverStateColor } from '../../lib/colors';
+import { serverStateIcon } from '../../lib/statusIcons';
 import { StatBar } from '../common/StatBar';
+import { StatusIcon } from '../common/StatusIcon';
 import { ServerExpanded } from './ServerExpanded';
 import type { ServerListItem } from '../../lib/types';
 
-export function ServerCard({ server }: { server: ServerListItem }) {
-	const [expanded, setExpanded] = useState(false);
+export function ServerCard({ server, expanded }: { server: ServerListItem; expanded: boolean }) {
 	const stats = server.info.stats;
 
 	return (
 		<Card withBorder padding="md" radius="md">
-			<Group justify="space-between" mb="xs" wrap="nowrap">
-				<Group gap="xs" wrap="nowrap">
-					<Text fw={600}>{server.name}</Text>
-					<Badge color={serverStateColor(server.info.state)} variant="light">
-						{server.info.state}
-					</Badge>
-					{server.info.region ? (
-						<Text size="xs" c="dimmed">
-							{server.info.region}
-						</Text>
-					) : null}
-				</Group>
-				<ActionIcon
-					variant="subtle"
-					color="gray"
-					aria-label={expanded ? 'Collapse' : 'Expand'}
-					onClick={() => setExpanded((v) => !v)}
-				>
-					{expanded ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
-				</ActionIcon>
+			<Group gap="xs" wrap="nowrap" mb="xs">
+				<StatusIcon
+					icon={serverStateIcon(server.info.state)}
+					color={serverStateColor(server.info.state)}
+					label={server.info.state}
+				/>
+				<Text fw={600}>{server.name}</Text>
+				{server.info.region ? (
+					<Text size="xs" c="dimmed">
+						{server.info.region}
+					</Text>
+				) : null}
 			</Group>
 
 			{stats ? (
