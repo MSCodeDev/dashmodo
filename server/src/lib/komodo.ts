@@ -25,3 +25,21 @@ export async function cachedRead<
 	cache.set(key, { value, expires: Date.now() + ttlMs });
 	return value;
 }
+
+export interface KomodoError {
+	status: number;
+	message: string;
+}
+
+/** komodo_client rejects with `{ status, result: { error } }`, not an Error instance. */
+export function normalizeKomodoError(err: unknown): KomodoError {
+	if (err && typeof err === 'object' && 'status' in err) {
+		const e = err as { status: number; result?: { error?: string } };
+		const validHttpStatus = e.status >= 100 && e.status < 600 && e.status !== 1;
+		return {
+			status: validHttpStatus ? e.status : 502,
+			message: e.result?.error ?? 'Komodo request failed'
+		};
+	}
+	return { status: 502, message: err instanceof Error ? err.message : 'Unknown error' };
+}
