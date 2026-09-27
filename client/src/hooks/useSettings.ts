@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
+import { toast } from '../lib/toast';
 import type { ServerSettingsRow, StackSettingsRow } from '../lib/types';
 
 export function useSettingsStacks() {
@@ -24,7 +25,9 @@ export function useUpdateStackSettings() {
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: ['settings-stacks'] });
 			qc.invalidateQueries({ queryKey: ['stacks'] });
-		}
+			toast.success('Stack settings saved');
+		},
+		onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to save stack settings')
 	});
 }
 
@@ -43,6 +46,8 @@ export function useUpdateServerSettings() {
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: ['settings-servers'] });
 			qc.invalidateQueries({ queryKey: ['stacks'] });
-		}
+			toast.success('Server settings saved');
+		},
+		onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to save server settings')
 	});
 }

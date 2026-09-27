@@ -1,51 +1,51 @@
-import type { Icon } from '@tabler/icons-react';
+import type { LucideIcon } from 'lucide-react';
 import {
-	IconAlertCircle,
-	IconBan,
-	IconCircleCheck,
-	IconCircleDashed,
-	IconCircleX,
-	IconHelpCircle,
-	IconLoader2,
-	IconPlayerPause,
-	IconTrash
-} from '@tabler/icons-react';
+	Ban,
+	CircleAlert,
+	CircleCheck,
+	CircleDashed,
+	CirclePause,
+	CircleQuestionMark,
+	CircleX,
+	LoaderCircle,
+	Trash
+} from 'lucide-react';
 import type { ServerState, StackState } from './types';
 
-export function serverStateIcon(state: ServerState): Icon {
+export function serverStateIcon(state: ServerState): LucideIcon {
 	switch (state) {
 		case 'Ok':
-			return IconCircleCheck;
+			return CircleCheck;
 		case 'NotOk':
-			return IconCircleX;
+			return CircleX;
 		case 'Disabled':
-			return IconBan;
+			return Ban;
 		default:
-			return IconHelpCircle;
+			return CircleQuestionMark;
 	}
 }
 
-export function stackStateIcon(state: StackState): Icon {
+export function stackStateIcon(state: StackState): LucideIcon {
 	switch (state) {
 		case 'running':
-			return IconCircleCheck;
+			return CircleCheck;
 		case 'deploying':
 		case 'restarting':
-			return IconLoader2;
+			return LoaderCircle;
 		case 'paused':
-			return IconPlayerPause;
+			return CirclePause;
 		case 'created':
-			return IconCircleDashed;
+			return CircleDashed;
 		case 'stopped':
 		case 'down':
-			return IconBan;
+			return Ban;
 		case 'removing':
-			return IconTrash;
+			return Trash;
 		case 'dead':
 		case 'unhealthy':
-			return IconAlertCircle;
+			return CircleAlert;
 		case 'unknown':
 		default:
-			return IconHelpCircle;
+			return CircleQuestionMark;
 	}
 }

@@ -46,23 +46,6 @@ export interface ServerListItem {
 	};
 }
 
-export interface SingleDiskUsage {
-	mount: string;
-	used_gb: number;
-	total_gb: number;
-}
-
-export interface SystemStats {
-	cpu_perc: number;
-	load_average?: SystemLoadAverage;
-	mem_used_gb: number;
-	mem_total_gb: number;
-	disks: SingleDiskUsage[];
-	network_ingress_bytes?: number;
-	network_egress_bytes?: number;
-	refresh_ts: number;
-}
-
 export interface SystemStatsRecord {
 	ts: number;
 	cpu_perc: number;
@@ -72,15 +55,6 @@ export interface SystemStatsRecord {
 	disk_total_gb: number;
 	network_ingress_bytes?: number;
 	network_egress_bytes?: number;
-}
-
-export interface ServerDetail {
-	server: {
-		id: string;
-		name: string;
-		config: { address?: string; external_address?: string };
-	};
-	stats?: SystemStats;
 }
 
 export interface ResolvedLink {

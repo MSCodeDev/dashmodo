@@ -1,20 +1,39 @@
-import { AppShell, Anchor, Button, Group, Text } from '@mantine/core';
+import { AppShell, Button, Group, Title } from '@mantine/core';
+import { ExternalLink, Settings as SettingsIcon } from 'lucide-react';
 import { useConfig } from '../../hooks/useConfig';
 
 export function TopNav({ onOpenSettings }: { onOpenSettings: () => void }) {
 	const config = useConfig();
 
 	return (
-		<AppShell.Header>
+		<AppShell.Header bg="dark.6" style={{ borderBottom: '1px solid var(--mantine-color-dark-4)' }}>
 			<Group h="100%" px="md" justify="space-between">
-				<Text fw={700}>dashmodo</Text>
-				<Group gap="lg">
+				<Group gap="xs">
+					<img src="/logo.png" alt="" width={28} height={28} />
+					<Title order={3} fw={700}>
+						dashmodo
+					</Title>
+				</Group>
+				<Group gap="sm">
 					{config.data?.komodoUrl ? (
-						<Anchor href={config.data.komodoUrl} target="_blank" rel="noreferrer" size="sm">
+						<Button
+							component="a"
+							href={config.data.komodoUrl}
+							target="_blank"
+							rel="noreferrer"
+							variant="default"
+							size="sm"
+							leftSection={<ExternalLink size={16} />}
+						>
 							Komodo
-						</Anchor>
+						</Button>
 					) : null}
-					<Button variant="subtle" size="sm" onClick={onOpenSettings}>
+					<Button
+						variant="default"
+						size="sm"
+						leftSection={<SettingsIcon size={16} />}
+						onClick={onOpenSettings}
+					>
 						Settings
 					</Button>
 				</Group>

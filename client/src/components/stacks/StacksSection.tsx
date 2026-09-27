@@ -1,4 +1,5 @@
-import { Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Group, Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Layers } from 'lucide-react';
 import { useStacks } from '../../hooks/useStacks';
 import { StackCard } from './StackCard';
 import { ApiErrorAlert } from '../common/ApiErrorAlert';
@@ -8,7 +9,10 @@ export function StacksSection() {
 
 	return (
 		<Stack>
-			<Title order={2}>Stacks</Title>
+			<Group gap="xs">
+				<Layers size={22} />
+				<Title order={2}>Stacks</Title>
+			</Group>
 
 			{isLoading ? <Loader /> : null}
 

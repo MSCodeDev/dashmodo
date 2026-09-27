@@ -1,3 +1,11 @@
 body {
 	margin: 0;
 }
+
+/* Set explicitly so the background is correct before Mantine's JS applies the color scheme. */
+body[data-mantine-color-scheme='dark'] {
+	background-color: #0f1115;
+}
+body[data-mantine-color-scheme='light'] {
+	background-color: #f8f9fa;
+}

@@ -1,5 +1,5 @@
 import { Card, Collapse, Group, SimpleGrid, Text } from '@mantine/core';
-import { IconCpu, IconDatabase, IconDeviceSdCard } from '@tabler/icons-react';
+import { Cpu, Database, MemoryStick } from 'lucide-react';
 import { serverStateColor } from '../../lib/colors';
 import { serverStateIcon } from '../../lib/statusIcons';
 import { StatBar } from '../common/StatBar';
@@ -11,7 +11,13 @@ export function ServerCard({ server, expanded }: { server: ServerListItem; expan
 	const stats = server.info.stats;
 
 	return (
-		<Card withBorder padding="md" radius="md">
+		<Card
+			withBorder
+			padding="md"
+			radius="md"
+			bg="#15171b"
+			style={{ borderColor: '#1d1f25' }}
+		>
 			<Group gap="xs" wrap="nowrap" mb="xs">
 				<StatusIcon
 					icon={serverStateIcon(server.info.state)}
@@ -28,16 +34,16 @@ export function ServerCard({ server, expanded }: { server: ServerListItem; expan
 
 			{stats ? (
 				<SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
-					<StatBar icon={IconCpu} label="CPU" percent={stats.cpu_perc} />
+					<StatBar icon={Cpu} label="CPU" percent={stats.cpu_perc} />
 					<StatBar
-						icon={IconDatabase}
+						icon={MemoryStick}
 						label="Memory"
 						percent={(stats.mem_used_gb / stats.mem_total_gb) * 100}
 						detail={`${stats.mem_used_gb.toFixed(1)} / ${stats.mem_total_gb.toFixed(1)} GB`}
 					/>
 					{stats.disk_total_gb ? (
 						<StatBar
-							icon={IconDeviceSdCard}
+							icon={Database}
 							label="Disk"
 							percent={((stats.disk_used_gb ?? 0) / stats.disk_total_gb) * 100}
 							detail={`${(stats.disk_used_gb ?? 0).toFixed(0)} / ${stats.disk_total_gb.toFixed(0)} GB`}

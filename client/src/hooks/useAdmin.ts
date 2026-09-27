@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
+import { toast } from '../lib/toast';
 import type { AdminSession } from '../lib/types';
 
 export function useAdminSession() {
@@ -21,6 +22,9 @@ export function useAdminLogout() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: () => api.post('/admin/logout'),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-session'] })
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ['admin-session'] });
+			toast.success('Logged out');
+		}
 	});
 }

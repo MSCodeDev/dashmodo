@@ -3,6 +3,7 @@ import { stackStateColor } from '../../lib/colors';
 import { selfhstIconUrl } from '../../lib/icons';
 import { stackStateIcon } from '../../lib/statusIcons';
 import { StatusIcon } from '../common/StatusIcon';
+import classes from './StackCard.module.css';
 import type { StackListItem } from '../../lib/types';
 
 export function StackCard({ stack }: { stack: StackListItem }) {
@@ -17,11 +18,14 @@ export function StackCard({ stack }: { stack: StackListItem }) {
 			withBorder
 			padding="md"
 			radius="md"
+			className={hasLink ? classes.card : undefined}
 			style={{
 				cursor: hasLink ? 'pointer' : 'default',
 				textDecoration: 'none',
 				color: 'inherit',
-				opacity: hasLink ? 1 : 0.7
+				opacity: hasLink ? 1 : 0.7,
+				backgroundColor: '#15171b',
+				borderColor: '#1d1f25'
 			}}
 		>
 			<Group justify="space-between" align="flex-start" wrap="nowrap">

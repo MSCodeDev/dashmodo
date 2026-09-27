@@ -1,0 +1,12 @@
+.card {
+	transition:
+		transform 150ms ease,
+		box-shadow 150ms ease,
+		border-color 150ms ease;
+}
+
+.card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+	border-color: var(--mantine-color-dark-3);
+}

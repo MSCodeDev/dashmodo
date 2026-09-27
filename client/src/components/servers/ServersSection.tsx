@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ActionIcon, Group, Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
+import { ChevronDown, ChevronUp, Server } from 'lucide-react';
 import { useServers } from '../../hooks/useServers';
 import { ServerCard } from './ServerCard';
 import { ApiErrorAlert } from '../common/ApiErrorAlert';
@@ -12,7 +12,10 @@ export function ServersSection() {
 	return (
 		<Stack>
 			<Group justify="space-between">
-				<Title order={2}>Servers</Title>
+				<Group gap="xs">
+					<Server size={22} />
+					<Title order={2}>Servers</Title>
+				</Group>
 				{data && data.length > 0 ? (
 					<ActionIcon
 						variant="subtle"
@@ -20,7 +23,7 @@ export function ServersSection() {
 						aria-label={expanded ? 'Collapse all' : 'Expand all'}
 						onClick={() => setExpanded((v) => !v)}
 					>
-						{expanded ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
+						{expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
 					</ActionIcon>
 				) : null}
 			</Group>

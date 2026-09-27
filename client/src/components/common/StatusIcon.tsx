@@ -1,8 +1,8 @@
 import { Tooltip } from '@mantine/core';
-import type { Icon } from '@tabler/icons-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface StatusIconProps {
-	icon: Icon;
+	icon: LucideIcon;
 	color: string;
 	label: string;
 	size?: number;

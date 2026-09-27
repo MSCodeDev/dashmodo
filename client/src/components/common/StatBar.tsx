@@ -1,12 +1,12 @@
 import { Group, Progress, Text } from '@mantine/core';
-import type { Icon } from '@tabler/icons-react';
+import type { LucideIcon } from 'lucide-react';
 import { statColor } from '../../lib/colors';
 
 interface StatBarProps {
 	label: string;
 	percent: number;
 	detail?: string;
-	icon: Icon;
+	icon: LucideIcon;
 }
 
 export function StatBar({ label, percent, detail, icon: IconComponent }: StatBarProps) {
