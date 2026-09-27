@@ -10,6 +10,44 @@ export const settingsRouter = Router();
 
 settingsRouter.use(requireAdmin);
 
+const updateSchema = z.object({
+	hidden: z.boolean().optional(),
+	linkOverride: z.string().nullable().optional()
+});
+
+async function upsertSetting(
+	resourceType: 'stack' | 'server',
+	resourceId: string,
+	data: z.infer<typeof updateSchema>
+) {
+	const { hidden } = data;
+	const linkOverride = data.linkOverride === '' ? null : data.linkOverride;
+
+	const where = and(
+		eq(resourceSettings.resourceType, resourceType),
+		eq(resourceSettings.resourceId, resourceId)
+	);
+	const existing = await db.select().from(resourceSettings).where(where);
+
+	if (existing.length === 0) {
+		await db.insert(resourceSettings).values({
+			resourceType,
+			resourceId,
+			hidden: hidden ?? false,
+			linkOverride: linkOverride ?? null
+		});
+	} else {
+		await db
+			.update(resourceSettings)
+			.set({
+				...(hidden !== undefined ? { hidden } : {}),
+				...(linkOverride !== undefined ? { linkOverride } : {}),
+				updatedAt: new Date()
+			})
+			.where(where);
+	}
+}
+
 settingsRouter.get('/stacks', async (_req, res) => {
 	try {
 		const [stacks, settingsRows] = await Promise.all([
@@ -32,44 +70,45 @@ settingsRouter.get('/stacks', async (_req, res) => {
 	}
 });
 
-const updateSchema = z.object({
-	hidden: z.boolean().optional(),
-	linkOverride: z.string().nullable().optional()
-});
-
 settingsRouter.put('/stacks/:id', async (req, res) => {
 	const parsed = updateSchema.safeParse(req.body);
 	if (!parsed.success) {
 		res.status(400).json({ error: 'Invalid request body', detail: parsed.error.flatten() });
 		return;
 	}
-	const { hidden } = parsed.data;
+	await upsertSetting('stack', req.params.id, parsed.data);
+	res.json({ ok: true });
+});
 
-	const where = and(
-		eq(resourceSettings.resourceType, 'stack'),
-		eq(resourceSettings.resourceId, req.params.id)
-	);
-	const existing = await db.select().from(resourceSettings).where(where);
-
-	const normalizedLinkOverride = parsed.data.linkOverride === '' ? null : parsed.data.linkOverride;
-
-	if (existing.length === 0) {
-		await db.insert(resourceSettings).values({
-			resourceType: 'stack',
-			resourceId: req.params.id,
-			hidden: hidden ?? false,
-			linkOverride: normalizedLinkOverride ?? null
-		});
-	} else {
-		await db
-			.update(resourceSettings)
-			.set({
-				...(hidden !== undefined ? { hidden } : {}),
-				...(normalizedLinkOverride !== undefined ? { linkOverride: normalizedLinkOverride } : {}),
-				updatedAt: new Date()
-			})
-			.where(where);
+settingsRouter.get('/servers', async (_req, res) => {
+	try {
+		const [servers, settingsRows] = await Promise.all([
+			cachedRead('ListServers', {}),
+			db.select().from(resourceSettings).where(eq(resourceSettings.resourceType, 'server'))
+		]);
+		const settingsById = new Map(settingsRows.map((r) => [r.resourceId, r]));
+		const merged = servers.map((s) => ({
+			id: s.id,
+			name: s.name,
+			state: s.info.state,
+			// What link derivation currently sees, before any admin override — helps explain why
+			// an override might be needed (e.g. shows an internal-only Periphery address).
+			detectedAddress: s.info.external_address || s.info.address || null,
+			linkOverride: settingsById.get(s.id)?.linkOverride ?? null
+		}));
+		res.json(merged);
+	} catch (err) {
+		const e = normalizeKomodoError(err);
+		res.status(e.status).json({ error: e.message });
 	}
+});
 
+settingsRouter.put('/servers/:id', async (req, res) => {
+	const parsed = updateSchema.safeParse(req.body);
+	if (!parsed.success) {
+		res.status(400).json({ error: 'Invalid request body', detail: parsed.error.flatten() });
+		return;
+	}
+	await upsertSetting('server', req.params.id, parsed.data);
 	res.json({ ok: true });
 });

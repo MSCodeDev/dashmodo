@@ -35,11 +35,19 @@ export interface ResolveStackLinkInput {
 	server?: Pick<Types.ServerListItemInfo, 'address' | 'external_address'>;
 	services?: Types.StackService[];
 	linkOverride?: string | null;
+	/**
+	 * Admin-configured host/address for this stack's server, used in place of
+	 * external_address/address when deriving a port-based link. Fixes cases where Komodo's
+	 * `address` is only reachable inside Komodo's own network (e.g. a containerized Periphery
+	 * agent reachable at `periphery:8120`, not from a browser) and `external_address` isn't set.
+	 */
+	serverLinkOverride?: string | null;
 }
 
 /**
- * Priority: dashmodo admin override > Komodo's own `links` config > derived from the
- * server's external_address/address + first published container port > no link.
+ * Priority: dashmodo admin override > Komodo's own `links` config > derived from
+ * (serverLinkOverride, else the server's external_address/address) + first published
+ * container port > no link.
  */
 export function resolveStackLink(input: ResolveStackLinkInput): ResolvedLink {
 	if (input.linkOverride) {
@@ -50,9 +58,9 @@ export function resolveStackLink(input: ResolveStackLinkInput): ResolvedLink {
 		return { url: input.stackConfigLinks[0], source: 'komodo' };
 	}
 
-	const host = input.server
-		? extractHost(input.server.external_address || input.server.address || '')
-		: undefined;
+	const rawHost =
+		input.serverLinkOverride || input.server?.external_address || input.server?.address;
+	const host = rawHost ? extractHost(rawHost) : undefined;
 	if (!host) {
 		return { source: 'none' };
 	}

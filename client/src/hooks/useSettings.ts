@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import type { StackSettingsRow } from '../lib/types';
+import type { ServerSettingsRow, StackSettingsRow } from '../lib/types';
 
 export function useSettingsStacks() {
 	return useQuery({
@@ -16,6 +16,25 @@ export function useUpdateStackSettings() {
 			api.put(`/settings/stacks/${id}`, body),
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: ['settings-stacks'] });
+			qc.invalidateQueries({ queryKey: ['stacks'] });
+		}
+	});
+}
+
+export function useSettingsServers() {
+	return useQuery({
+		queryKey: ['settings-servers'],
+		queryFn: () => api.get<ServerSettingsRow[]>('/settings/servers')
+	});
+}
+
+export function useUpdateServerSettings() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, ...body }: { id: string; linkOverride?: string | null }) =>
+			api.put(`/settings/servers/${id}`, body),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ['settings-servers'] });
 			qc.invalidateQueries({ queryKey: ['stacks'] });
 		}
 	});

@@ -18,10 +18,11 @@ Thumbs.db
 # Vite
 vite.config.ts.timestamp-*
 
-# SQLite
+# SQLite (including WAL-mode auxiliary files)
 *.db
-*.sqlite
-*.sqlite3
+*.sqlite*
+*.db-shm
+*.db-wal
 
 # Planning / reference artifacts — never enters git history
 .project/

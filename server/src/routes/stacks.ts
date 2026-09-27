@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { resourceSettings } from '../db/schema.js';
 import { cachedRead, normalizeKomodoError } from '../lib/komodo.js';
@@ -7,18 +7,19 @@ import { resolveStackLink, type ResolvedLink } from '../lib/links.js';
 
 export const stacksRouter = Router();
 
-async function getStackSettingsMap() {
+async function getSettingsMap(resourceType: 'stack' | 'server') {
 	const rows = await db
 		.select()
 		.from(resourceSettings)
-		.where(eq(resourceSettings.resourceType, 'stack'));
+		.where(eq(resourceSettings.resourceType, resourceType));
 	return new Map(rows.map((r) => [r.resourceId, r]));
 }
 
 async function resolveLink(
 	stackId: string,
 	serverInfo: { address?: string; external_address?: string } | undefined,
-	linkOverride: string | null | undefined
+	linkOverride: string | null | undefined,
+	serverLinkOverride: string | null | undefined
 ): Promise<ResolvedLink> {
 	if (linkOverride) {
 		return resolveStackLink({ linkOverride });
@@ -41,24 +42,31 @@ async function resolveLink(
 	} catch {
 		services = undefined;
 	}
-	return resolveStackLink({ server: serverInfo, services });
+	return resolveStackLink({ server: serverInfo, services, serverLinkOverride });
 }
 
 stacksRouter.get('/', async (_req, res) => {
 	try {
-		const [stacks, servers, settings] = await Promise.all([
+		const [stacks, servers, stackSettings, serverSettings] = await Promise.all([
 			cachedRead('ListStacks', {}),
 			cachedRead('ListServers', {}),
-			getStackSettingsMap()
+			getSettingsMap('stack'),
+			getSettingsMap('server')
 		]);
 		const serverInfoById = new Map(servers.map((s) => [s.id, s.info]));
-		const visible = stacks.filter((s) => !settings.get(s.id)?.hidden);
+		const visible = stacks.filter((s) => !stackSettings.get(s.id)?.hidden);
 
 		const enriched = await Promise.all(
 			visible.map(async (stack) => {
-				const setting = settings.get(stack.id);
+				const setting = stackSettings.get(stack.id);
 				const serverInfo = serverInfoById.get(stack.info.server_id);
-				const link = await resolveLink(stack.id, serverInfo, setting?.linkOverride);
+				const serverLinkOverride = serverSettings.get(stack.info.server_id)?.linkOverride;
+				const link = await resolveLink(
+					stack.id,
+					serverInfo,
+					setting?.linkOverride,
+					serverLinkOverride
+				);
 				return { ...stack, link };
 			})
 		);
@@ -83,6 +91,7 @@ stacksRouter.get('/:id', async (req, res) => {
 		const setting = settingsRows.find((r) => r.resourceType === 'stack');
 
 		let serverInfo: { address?: string; external_address?: string } | undefined;
+		let serverLinkOverride: string | null | undefined;
 		if (stack.config?.server_id) {
 			try {
 				const server = await cachedRead('GetServer', { server: stack.config.server_id });
@@ -90,11 +99,26 @@ stacksRouter.get('/:id', async (req, res) => {
 			} catch {
 				// server unreachable/deleted — link derivation just falls through to "none"
 			}
+			const serverSettingRows = await db
+				.select()
+				.from(resourceSettings)
+				.where(
+					and(
+						eq(resourceSettings.resourceType, 'server'),
+						eq(resourceSettings.resourceId, stack.config.server_id)
+					)
+				);
+			serverLinkOverride = serverSettingRows[0]?.linkOverride;
 		}
 
 		const link = setting?.linkOverride
 			? resolveStackLink({ linkOverride: setting.linkOverride })
-			: resolveStackLink({ stackConfigLinks: stack.config?.links, server: serverInfo, services });
+			: resolveStackLink({
+					stackConfigLinks: stack.config?.links,
+					server: serverInfo,
+					services,
+					serverLinkOverride
+				});
 
 		res.json({ stack, services, link });
 	} catch (err) {

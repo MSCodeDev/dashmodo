@@ -114,3 +114,11 @@ export interface StackSettingsRow {
 	hidden: boolean;
 	linkOverride: string | null;
 }
+
+export interface ServerSettingsRow {
+	id: string;
+	name: string;
+	state: ServerState;
+	detectedAddress: string | null;
+	linkOverride: string | null;
+}

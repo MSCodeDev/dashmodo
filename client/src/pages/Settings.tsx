@@ -1,8 +1,9 @@
-import { Button, Group, Loader, Stack, Title } from '@mantine/core';
+import { Button, Group, Loader, Stack, Tabs, Title } from '@mantine/core';
 import { useAdminLogout, useAdminSession } from '../hooks/useAdmin';
-import { useSettingsStacks } from '../hooks/useSettings';
+import { useSettingsServers, useSettingsStacks } from '../hooks/useSettings';
 import { LoginForm } from '../components/settings/LoginForm';
 import { StackSettingsTable } from '../components/settings/StackSettingsTable';
+import { ServerSettingsTable } from '../components/settings/ServerSettingsTable';
 import { ApiErrorAlert } from '../components/common/ApiErrorAlert';
 
 export function Settings() {
@@ -31,6 +32,7 @@ export function Settings() {
 
 function SettingsContent({ showLogout, onLogout }: { showLogout: boolean; onLogout: () => void }) {
 	const stacks = useSettingsStacks();
+	const servers = useSettingsServers();
 
 	return (
 		<Stack>
@@ -43,9 +45,24 @@ function SettingsContent({ showLogout, onLogout }: { showLogout: boolean; onLogo
 				) : null}
 			</Group>
 
-			{stacks.isLoading ? <Loader /> : null}
-			{stacks.isError ? <ApiErrorAlert error={stacks.error} /> : null}
-			{stacks.data ? <StackSettingsTable rows={stacks.data} /> : null}
+			<Tabs defaultValue="stacks">
+				<Tabs.List>
+					<Tabs.Tab value="stacks">Stacks</Tabs.Tab>
+					<Tabs.Tab value="servers">Servers</Tabs.Tab>
+				</Tabs.List>
+
+				<Tabs.Panel value="stacks" pt="md">
+					{stacks.isLoading ? <Loader /> : null}
+					{stacks.isError ? <ApiErrorAlert error={stacks.error} /> : null}
+					{stacks.data ? <StackSettingsTable rows={stacks.data} /> : null}
+				</Tabs.Panel>
+
+				<Tabs.Panel value="servers" pt="md">
+					{servers.isLoading ? <Loader /> : null}
+					{servers.isError ? <ApiErrorAlert error={servers.error} /> : null}
+					{servers.data ? <ServerSettingsTable rows={servers.data} /> : null}
+				</Tabs.Panel>
+			</Tabs>
 		</Stack>
 	);
 }
