@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Alert, Loader, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Loader, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useStacks } from '../hooks/useStacks';
 import { StackTable } from '../components/stacks/StackTable';
+import { ApiErrorAlert } from '../components/common/ApiErrorAlert';
 
 export function Stacks() {
 	const { data, isLoading, isError, error } = useStacks();
@@ -29,13 +30,12 @@ export function Stacks() {
 
 			{isLoading ? <Loader /> : null}
 
-			{isError ? (
-				<Alert color="red" title="Failed to load stacks">
-					{error instanceof Error ? error.message : 'Unknown error'}
-				</Alert>
-			) : null}
+			{isError ? <ApiErrorAlert error={error} /> : null}
 
-			{data && filtered.length === 0 ? <Text c="dimmed">No stacks found.</Text> : null}
+			{data && data.length === 0 ? <Text c="dimmed">No stacks found.</Text> : null}
+			{data && data.length > 0 && filtered.length === 0 ? (
+				<Text c="dimmed">No stacks match "{search}".</Text>
+			) : null}
 
 			{filtered.length > 0 ? <StackTable stacks={filtered} /> : null}
 		</Stack>

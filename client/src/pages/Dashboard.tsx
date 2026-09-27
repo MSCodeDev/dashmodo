@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useServers } from '../hooks/useServers';
 import { useStacks } from '../hooks/useStacks';
 import { serverStateColor, stackStateColor } from '../lib/colors';
+import { ApiErrorAlert } from '../components/common/ApiErrorAlert';
 import type { ServerState, StackState } from '../lib/types';
 
 function countBy(states: string[]): Record<string, number> {
@@ -109,6 +110,8 @@ export function Dashboard() {
 	return (
 		<Stack>
 			<Title order={2}>Dashboard</Title>
+			{servers.isError ? <ApiErrorAlert error={servers.error} /> : null}
+			{stacks.isError ? <ApiErrorAlert error={stacks.error} /> : null}
 			<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
 				<SummaryCard
 					title="Servers"

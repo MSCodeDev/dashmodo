@@ -1,6 +1,7 @@
-import { Alert, Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { useServers } from '../hooks/useServers';
 import { ServerCard } from '../components/servers/ServerCard';
+import { ApiErrorAlert } from '../components/common/ApiErrorAlert';
 
 export function Servers() {
 	const { data, isLoading, isError, error } = useServers();
@@ -11,11 +12,7 @@ export function Servers() {
 
 			{isLoading ? <Loader /> : null}
 
-			{isError ? (
-				<Alert color="red" title="Failed to load servers">
-					{error instanceof Error ? error.message : 'Unknown error'}
-				</Alert>
-			) : null}
+			{isError ? <ApiErrorAlert error={error} /> : null}
 
 			{data && data.length === 0 ? <Text c="dimmed">No servers found.</Text> : null}
 
