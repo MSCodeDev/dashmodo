@@ -59,7 +59,7 @@ export interface SystemStatsRecord {
 
 export interface ResolvedLink {
 	url?: string;
-	source: 'override' | 'komodo' | 'derived' | 'none';
+	source: 'komodo' | 'derived' | 'none';
 }
 
 export interface StackListItem {
@@ -82,17 +82,29 @@ export interface AdminSession {
 	passwordRequired: boolean;
 }
 
+export type ColorScheme = 'system' | 'light' | 'dark';
+export type IconStyle = 'default' | 'light' | 'dark';
+
+export interface AppSettings {
+	siteName: string | null;
+	colorScheme: ColorScheme;
+	serversColumns: number;
+	stacksColumns: number;
+	defaultIconStyle: IconStyle;
+	customCss: string | null;
+	themeColor: string | null;
+}
+
 export interface AppConfig {
 	komodoUrl: string;
+	appSettings: AppSettings;
 }
 
 export interface StackSettingsRow {
 	id: string;
 	name: string;
-	server_name?: string;
 	state: StackState;
 	hidden: boolean;
-	linkOverride: string | null;
 	iconOverride: string | null;
 	defaultIcon: string;
 }
