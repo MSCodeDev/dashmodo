@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { and, eq } from 'drizzle-orm';
-import { db } from '../db/index.js';
-import { resourceSettings } from '../db/schema.js';
+import { store } from '../db/store.js';
 import { cachedRead, normalizeKomodoError } from '../lib/komodo.js';
 import { slugifyIconRef } from '../lib/icons.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
@@ -11,66 +9,26 @@ export const settingsRouter = Router();
 
 settingsRouter.use(requireAdmin);
 
-const updateSchema = z.object({
-	hidden: z.boolean().optional(),
-	linkOverride: z.string().nullable().optional(),
-	iconOverride: z.string().nullable().optional()
-});
-
 function normalize(value: string | null | undefined) {
 	return value === '' ? null : value;
 }
 
-async function upsertSetting(
-	resourceType: 'stack' | 'server',
-	resourceId: string,
-	data: z.infer<typeof updateSchema>
-) {
-	const { hidden } = data;
-	const linkOverride = normalize(data.linkOverride);
-	const iconOverride = normalize(data.iconOverride);
+// --- Stacks ---
 
-	const where = and(
-		eq(resourceSettings.resourceType, resourceType),
-		eq(resourceSettings.resourceId, resourceId)
-	);
-	const existing = await db.select().from(resourceSettings).where(where);
-
-	if (existing.length === 0) {
-		await db.insert(resourceSettings).values({
-			resourceType,
-			resourceId,
-			hidden: hidden ?? false,
-			linkOverride: linkOverride ?? null,
-			iconOverride: iconOverride ?? null
-		});
-	} else {
-		await db
-			.update(resourceSettings)
-			.set({
-				...(hidden !== undefined ? { hidden } : {}),
-				...(linkOverride !== undefined ? { linkOverride } : {}),
-				...(iconOverride !== undefined ? { iconOverride } : {}),
-				updatedAt: new Date()
-			})
-			.where(where);
-	}
-}
+const stackUpdateSchema = z.object({
+	hidden: z.boolean().optional(),
+	iconOverride: z.string().nullable().optional()
+});
 
 settingsRouter.get('/stacks', async (_req, res) => {
 	try {
-		const [stacks, settingsRows] = await Promise.all([
-			cachedRead('ListStacks', {}),
-			db.select().from(resourceSettings).where(eq(resourceSettings.resourceType, 'stack'))
-		]);
-		const settingsById = new Map(settingsRows.map((r) => [r.resourceId, r]));
+		const stacks = await cachedRead('ListStacks', {});
+		const settingsById = new Map(store.listResourceSettings('stack').map((r) => [r.resourceId, r]));
 		const merged = stacks.map((s) => ({
 			id: s.id,
 			name: s.name,
-			server_name: s.info.server_name,
 			state: s.info.state,
 			hidden: settingsById.get(s.id)?.hidden ?? false,
-			linkOverride: settingsById.get(s.id)?.linkOverride ?? null,
 			iconOverride: settingsById.get(s.id)?.iconOverride ?? null,
 			defaultIcon: slugifyIconRef(s.name)
 		}));
@@ -81,23 +39,31 @@ settingsRouter.get('/stacks', async (_req, res) => {
 	}
 });
 
-settingsRouter.put('/stacks/:id', async (req, res) => {
-	const parsed = updateSchema.safeParse(req.body);
+settingsRouter.put('/stacks/:id', (req, res) => {
+	const parsed = stackUpdateSchema.safeParse(req.body);
 	if (!parsed.success) {
 		res.status(400).json({ error: 'Invalid request body', detail: parsed.error.flatten() });
 		return;
 	}
-	await upsertSetting('stack', req.params.id, parsed.data);
+	const { hidden } = parsed.data;
+	const iconOverride = normalize(parsed.data.iconOverride);
+	store.upsertResourceSettings('stack', req.params.id, {
+		...(hidden !== undefined ? { hidden } : {}),
+		...(iconOverride !== undefined ? { iconOverride } : {})
+	});
 	res.json({ ok: true });
+});
+
+// --- Servers ---
+
+const serverUpdateSchema = z.object({
+	linkOverride: z.string().nullable().optional()
 });
 
 settingsRouter.get('/servers', async (_req, res) => {
 	try {
-		const [servers, settingsRows] = await Promise.all([
-			cachedRead('ListServers', {}),
-			db.select().from(resourceSettings).where(eq(resourceSettings.resourceType, 'server'))
-		]);
-		const settingsById = new Map(settingsRows.map((r) => [r.resourceId, r]));
+		const servers = await cachedRead('ListServers', {});
+		const settingsById = new Map(store.listResourceSettings('server').map((r) => [r.resourceId, r]));
 		const merged = servers.map((s) => ({
 			id: s.id,
 			name: s.name,
@@ -114,12 +80,37 @@ settingsRouter.get('/servers', async (_req, res) => {
 	}
 });
 
-settingsRouter.put('/servers/:id', async (req, res) => {
-	const parsed = updateSchema.safeParse(req.body);
+settingsRouter.put('/servers/:id', (req, res) => {
+	const parsed = serverUpdateSchema.safeParse(req.body);
 	if (!parsed.success) {
 		res.status(400).json({ error: 'Invalid request body', detail: parsed.error.flatten() });
 		return;
 	}
-	await upsertSetting('server', req.params.id, parsed.data);
+	const linkOverride = normalize(parsed.data.linkOverride);
+	store.upsertResourceSettings('server', req.params.id, {
+		...(linkOverride !== undefined ? { linkOverride } : {})
+	});
+	res.json({ ok: true });
+});
+
+// --- Global app settings ---
+
+const appSettingsUpdateSchema = z.object({
+	siteName: z.string().nullable().optional(),
+	colorScheme: z.enum(['system', 'light', 'dark']).optional(),
+	serversColumns: z.number().int().min(1).max(6).optional(),
+	stacksColumns: z.number().int().min(1).max(6).optional(),
+	defaultIconStyle: z.enum(['default', 'light', 'dark']).optional(),
+	customCss: z.string().nullable().optional(),
+	themeColor: z.string().nullable().optional()
+});
+
+settingsRouter.put('/app', (req, res) => {
+	const parsed = appSettingsUpdateSchema.safeParse(req.body);
+	if (!parsed.success) {
+		res.status(400).json({ error: 'Invalid request body', detail: parsed.error.flatten() });
+		return;
+	}
+	store.updateAppSettings(parsed.data);
 	res.json({ ok: true });
 });

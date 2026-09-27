@@ -1,31 +1,16 @@
 import { Router } from 'express';
-import { and, eq } from 'drizzle-orm';
-import { db } from '../db/index.js';
-import { resourceSettings } from '../db/schema.js';
+import { store } from '../db/store.js';
 import { cachedRead, normalizeKomodoError } from '../lib/komodo.js';
 import { resolveStackLink, type ResolvedLink } from '../lib/links.js';
 import { slugifyIconRef } from '../lib/icons.js';
 
 export const stacksRouter = Router();
 
-async function getSettingsMap(resourceType: 'stack' | 'server') {
-	const rows = await db
-		.select()
-		.from(resourceSettings)
-		.where(eq(resourceSettings.resourceType, resourceType));
-	return new Map(rows.map((r) => [r.resourceId, r]));
-}
-
 async function resolveLink(
 	stackId: string,
 	serverInfo: { address?: string; external_address?: string } | undefined,
-	linkOverride: string | null | undefined,
 	serverLinkOverride: string | null | undefined
 ): Promise<ResolvedLink> {
-	if (linkOverride) {
-		return resolveStackLink({ linkOverride });
-	}
-
 	let stackConfigLinks: string[] | undefined;
 	try {
 		const full = await cachedRead('GetStack', { stack: stackId }, 15000);
@@ -48,13 +33,13 @@ async function resolveLink(
 
 stacksRouter.get('/', async (_req, res) => {
 	try {
-		const [stacks, servers, stackSettings, serverSettings] = await Promise.all([
+		const [stacks, servers] = await Promise.all([
 			cachedRead('ListStacks', {}),
-			cachedRead('ListServers', {}),
-			getSettingsMap('stack'),
-			getSettingsMap('server')
+			cachedRead('ListServers', {})
 		]);
 		const serverInfoById = new Map(servers.map((s) => [s.id, s.info]));
+		const stackSettings = new Map(store.listResourceSettings('stack').map((r) => [r.resourceId, r]));
+		const serverSettings = new Map(store.listResourceSettings('server').map((r) => [r.resourceId, r]));
 		const visible = stacks.filter((s) => !stackSettings.get(s.id)?.hidden);
 
 		const enriched = await Promise.all(
@@ -62,12 +47,7 @@ stacksRouter.get('/', async (_req, res) => {
 				const setting = stackSettings.get(stack.id);
 				const serverInfo = serverInfoById.get(stack.info.server_id);
 				const serverLinkOverride = serverSettings.get(stack.info.server_id)?.linkOverride;
-				const link = await resolveLink(
-					stack.id,
-					serverInfo,
-					setting?.linkOverride,
-					serverLinkOverride
-				);
+				const link = await resolveLink(stack.id, serverInfo, serverLinkOverride);
 				const icon = setting?.iconOverride || slugifyIconRef(stack.name);
 				return { ...stack, link, icon };
 			})
@@ -82,15 +62,11 @@ stacksRouter.get('/', async (_req, res) => {
 
 stacksRouter.get('/:id', async (req, res) => {
 	try {
-		const [stack, services, settingsRows] = await Promise.all([
+		const [stack, services] = await Promise.all([
 			cachedRead('GetStack', { stack: req.params.id }),
-			cachedRead('ListStackServices', { stack: req.params.id }).catch(() => []),
-			db
-				.select()
-				.from(resourceSettings)
-				.where(eq(resourceSettings.resourceId, req.params.id))
+			cachedRead('ListStackServices', { stack: req.params.id }).catch(() => [])
 		]);
-		const setting = settingsRows.find((r) => r.resourceType === 'stack');
+		const setting = store.getResourceSettings('stack', req.params.id);
 
 		let serverInfo: { address?: string; external_address?: string } | undefined;
 		let serverLinkOverride: string | null | undefined;
@@ -101,26 +77,15 @@ stacksRouter.get('/:id', async (req, res) => {
 			} catch {
 				// server unreachable/deleted — link derivation just falls through to "none"
 			}
-			const serverSettingRows = await db
-				.select()
-				.from(resourceSettings)
-				.where(
-					and(
-						eq(resourceSettings.resourceType, 'server'),
-						eq(resourceSettings.resourceId, stack.config.server_id)
-					)
-				);
-			serverLinkOverride = serverSettingRows[0]?.linkOverride;
+			serverLinkOverride = store.getResourceSettings('server', stack.config.server_id)?.linkOverride;
 		}
 
-		const link = setting?.linkOverride
-			? resolveStackLink({ linkOverride: setting.linkOverride })
-			: resolveStackLink({
-					stackConfigLinks: stack.config?.links,
-					server: serverInfo,
-					services,
-					serverLinkOverride
-				});
+		const link = resolveStackLink({
+			stackConfigLinks: stack.config?.links,
+			server: serverInfo,
+			services,
+			serverLinkOverride
+		});
 
 		const icon = setting?.iconOverride || slugifyIconRef(stack.name);
 

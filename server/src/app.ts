@@ -7,6 +7,7 @@ import { stacksRouter } from './routes/stacks.js';
 import { adminRouter } from './routes/admin.js';
 import { settingsRouter } from './routes/settings.js';
 import { env } from './env.js';
+import { store } from './db/store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // server/src/app.ts (dev) or server/dist/app.js (prod) — either way, two levels up + client/dist.
@@ -21,9 +22,10 @@ app.get('/api/health', (_req, res) => {
 	res.json({ ok: true });
 });
 
-// Not a secret (unlike the API key/secret) — safe to expose so the client can link to Komodo.
+// Not secret (unlike the API key/secret) — safe to expose so every viewer can link to Komodo
+// and render the admin-configured display settings (theme, columns, custom CSS, etc).
 app.get('/api/config', (_req, res) => {
-	res.json({ komodoUrl: env.KOMODO_URL });
+	res.json({ komodoUrl: env.KOMODO_URL, appSettings: store.getAppSettings() });
 });
 
 app.use('/api/servers', serversRouter);

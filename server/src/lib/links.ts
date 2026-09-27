@@ -22,7 +22,7 @@ function urlFor(host: string, port: number): string {
 	return `${scheme}://${host}:${port}`;
 }
 
-export type LinkSource = 'override' | 'komodo' | 'derived' | 'none';
+export type LinkSource = 'komodo' | 'derived' | 'none';
 
 export interface ResolvedLink {
 	url?: string;
@@ -34,7 +34,6 @@ export interface ResolveStackLinkInput {
 	stackConfigLinks?: string[];
 	server?: Pick<Types.ServerListItemInfo, 'address' | 'external_address'>;
 	services?: Types.StackService[];
-	linkOverride?: string | null;
 	/**
 	 * Admin-configured host/address for this stack's server, used in place of
 	 * external_address/address when deriving a port-based link. Fixes cases where Komodo's
@@ -45,15 +44,10 @@ export interface ResolveStackLinkInput {
 }
 
 /**
- * Priority: dashmodo admin override > Komodo's own `links` config > derived from
- * (serverLinkOverride, else the server's external_address/address) + first published
- * container port > no link.
+ * Priority: Komodo's own `links` config on the stack > derived from (serverLinkOverride, else
+ * the server's external_address/address) + first published container port > no link.
  */
 export function resolveStackLink(input: ResolveStackLinkInput): ResolvedLink {
-	if (input.linkOverride) {
-		return { url: input.linkOverride, source: 'override' };
-	}
-
 	if (input.stackConfigLinks && input.stackConfigLinks.length > 0) {
 		return { url: input.stackConfigLinks[0], source: 'komodo' };
 	}
