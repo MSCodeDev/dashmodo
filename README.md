@@ -72,8 +72,9 @@ npm run dev             # runs server (:44000) + client (:54173) together
 ```
 
 Open http://localhost:54173 — the Vite dev server proxies `/api` to the Express server on :44000.
-Same onboarding/config behavior as above, persisted to `server/data/dashmodo.json` on disk instead
-of a Docker volume.
+Same onboarding/config behavior as above (including the setup token, printed to this terminal
+instead of `docker compose logs`), persisted to `server/data/dashmodo.json` on disk instead of a
+Docker volume.
 
 ## How stack links are resolved
 
