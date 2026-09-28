@@ -2,9 +2,7 @@ services:
   dashmodo:
     build: .
     ports:
-      - '4000:4000'
-    environment:
-      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:-}
+      - '44000:44000'
     volumes:
       - dashmodo-data:/app/data
     restart: unless-stopped

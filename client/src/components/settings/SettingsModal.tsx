@@ -16,6 +16,7 @@ import { LoginForm } from './LoginForm';
 import { StackSettingsTable } from './StackSettingsTable';
 import { ServerSettingsTable } from './ServerSettingsTable';
 import { GeneralSettingsForm } from './GeneralSettingsForm';
+import { ConnectionSettingsForm } from './ConnectionSettingsForm';
 import { ApiErrorAlert } from '../common/ApiErrorAlert';
 
 export function SettingsModal({ opened, onClose }: { opened: boolean; onClose: () => void }) {
@@ -72,15 +73,22 @@ export function SettingsModal({ opened, onClose }: { opened: boolean; onClose: (
 						<Text fw={700} size="lg">
 							Settings
 						</Text>
-						<Button
-							size="xs"
-							color={config.data?.appSettings.themeColor ?? undefined}
-							onClick={handleSave}
-							loading={isPending}
-							disabled={!hasChanges}
-						>
-							Save
-						</Button>
+						<Group gap="xs">
+							{session.data?.passwordRequired ? (
+								<Button variant="subtle" size="xs" onClick={() => logout.mutate()}>
+									Log out
+								</Button>
+							) : null}
+							<Button
+								size="xs"
+								color={config.data?.appSettings.themeColor ?? undefined}
+								onClick={handleSave}
+								loading={isPending}
+								disabled={!hasChanges}
+							>
+								Save
+							</Button>
+						</Group>
 					</Group>
 				) : (
 					<Text fw={700} size="lg">
@@ -96,17 +104,10 @@ export function SettingsModal({ opened, onClose }: { opened: boolean; onClose: (
 
 			{session.data && authenticated ? (
 				<Stack>
-					{session.data.passwordRequired ? (
-						<Group justify="flex-end">
-							<Button variant="subtle" size="xs" onClick={() => logout.mutate()}>
-								Log out
-							</Button>
-						</Group>
-					) : null}
-
 					<Tabs defaultValue="general">
 						<Tabs.List>
 							<Tabs.Tab value="general">General</Tabs.Tab>
+							<Tabs.Tab value="connection">Connection</Tabs.Tab>
 							<Tabs.Tab value="stacks">Stacks</Tabs.Tab>
 							<Tabs.Tab value="servers">Servers</Tabs.Tab>
 						</Tabs.List>
@@ -116,6 +117,18 @@ export function SettingsModal({ opened, onClose }: { opened: boolean; onClose: (
 							{config.isError ? <ApiErrorAlert error={config.error} /> : null}
 							{config.data ? (
 								<GeneralSettingsForm
+									settings={config.data.appSettings}
+									pending={pendingApp}
+									onChange={(patch) => setPendingApp((prev) => ({ ...prev, ...patch }))}
+								/>
+							) : null}
+						</Tabs.Panel>
+
+						<Tabs.Panel value="connection" pt="md">
+							{config.isLoading ? <Loader /> : null}
+							{config.isError ? <ApiErrorAlert error={config.error} /> : null}
+							{config.data ? (
+								<ConnectionSettingsForm
 									settings={config.data.appSettings}
 									connection={connectionQuery.data}
 									pending={pendingApp}

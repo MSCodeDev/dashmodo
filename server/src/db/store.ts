@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 
@@ -41,6 +42,12 @@ export interface AppSettingsData {
 interface StoreData {
 	resourceSettings: ResourceSettingsRow[];
 	appSettings: AppSettingsData;
+	/**
+	 * Signs the admin session cookie. Generated once on first boot and persisted here (never
+	 * user-editable, never in `appSettings`) so it's stable across restarts but requires zero
+	 * manual setup — the last thing that used to need a manually-set env var.
+	 */
+	sessionSecret: string;
 }
 
 const DEFAULT_APP_SETTINGS: AppSettingsData = {
@@ -62,18 +69,19 @@ const DEFAULT_APP_SETTINGS: AppSettingsData = {
 function load(): StoreData {
 	mkdirSync(dirname(DATA_FILE_PATH), { recursive: true });
 	if (!existsSync(DATA_FILE_PATH)) {
-		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS } };
+		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS }, sessionSecret: '' };
 	}
 	try {
 		const raw = readFileSync(DATA_FILE_PATH, 'utf8');
 		const parsed = JSON.parse(raw) as Partial<StoreData>;
 		return {
 			resourceSettings: parsed.resourceSettings ?? [],
-			appSettings: { ...DEFAULT_APP_SETTINGS, ...parsed.appSettings }
+			appSettings: { ...DEFAULT_APP_SETTINGS, ...parsed.appSettings },
+			sessionSecret: parsed.sessionSecret ?? ''
 		};
 	} catch (err) {
 		console.error(`Failed to read/parse ${DATA_FILE_PATH}, starting with defaults:`, err);
-		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS } };
+		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS }, sessionSecret: '' };
 	}
 }
 
@@ -84,6 +92,13 @@ function persist() {
 	const tmpPath = `${DATA_FILE_PATH}.tmp`;
 	writeFileSync(tmpPath, JSON.stringify(data, null, 2));
 	renameSync(tmpPath, DATA_FILE_PATH);
+}
+
+// First boot (or upgrading from before this field existed) — generate once and persist immediately
+// so it's stable across restarts; regenerating it on every boot would silently log everyone out.
+if (!data.sessionSecret) {
+	data.sessionSecret = randomBytes(32).toString('hex');
+	persist();
 }
 
 export const store = {
@@ -131,5 +146,9 @@ export const store = {
 	isKomodoConfigured(): boolean {
 		const s = data.appSettings;
 		return Boolean(s.komodoUrl && s.komodoApiKey && s.komodoApiSecret);
+	},
+
+	getSessionSecret(): string {
+		return data.sessionSecret;
 	}
 };

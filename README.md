@@ -14,24 +14,15 @@ Komodo doesn't have one configured. Includes an admin page for hiding stacks and
 
 ```bash
 npm install
-cp .env.example .env   # optionally set ADMIN_SESSION_SECRET
-npm run dev             # runs server (:4000) + client (:5173) together
+npm run dev             # runs server (:44000) + client (:54173) together
 ```
 
-Open http://localhost:5173 — the Vite dev server proxies `/api` to the Express server on :4000. On
+Open http://localhost:54173 — the Vite dev server proxies `/api` to the Express server on :44000. On
 first run, Dashmodo shows an onboarding screen to collect the Komodo URL, API key/secret, and an
-optional admin password — these persist to a JSON file, not env vars, and are editable afterwards
-from the Settings panel.
-
-## Environment variables
-
-| Variable | Required | Description |
-|---|---|---|
-| `ADMIN_SESSION_SECRET` | no (required if an admin password is set) | Secret used to sign the admin session cookie — a deployment-level concern distinct from the admin password itself |
-
-Everything else — Komodo URL/API key/secret, admin password, and the extra port denylist for link
-derivation — is set via the onboarding flow and stored (the password hashed) in
-`server/data/dashmodo.json`.
+optional admin password. No env vars or manual config files needed — everything (including the
+admin session secret) is generated on first boot and persisted, hashed/as-needed, to
+`server/data/dashmodo.json`; connection details and the admin password are editable afterwards from
+the Settings panel.
 
 ## How stack links are resolved
 
@@ -50,11 +41,10 @@ For each stack, in order:
 docker compose up --build
 ```
 
-Reads the same `.env` file as `npm run dev` (docker-compose auto-loads `.env` from the project root)
-for `ADMIN_SESSION_SECRET`. Serves the built client and the API from the same container on port
-`4000` (mapped in `docker-compose.yml`). All other config — including Komodo connection details —
-persists as a JSON file in a named volume (`dashmodo-data`), set via the onboarding flow on first
-launch.
+No env vars to set. Serves the built client and the API from the same container on port `44000`
+(mapped in `docker-compose.yml`). All config — including Komodo connection details and the admin
+session secret — persists as a JSON file in a named volume (`dashmodo-data`), set via the
+onboarding flow on first launch.
 
 ## Project layout
 

@@ -10,6 +10,7 @@ import { iconsRouter } from './routes/icons.js';
 import { onboardingRouter } from './routes/onboarding.js';
 import { store } from './db/store.js';
 import { ICONS_DIR } from './lib/iconStorage.js';
+import { requireAdmin } from './middleware/requireAdmin.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // server/src/app.ts (dev) or server/dist/app.js (prod) — either way, two levels up + client/dist.
@@ -37,8 +38,10 @@ app.get('/api/config', (_req, res) => {
 });
 
 app.use('/api/onboarding', onboardingRouter);
-app.use('/api/servers', serversRouter);
-app.use('/api/stacks', stacksRouter);
+// The admin password (when set) gates the whole interface, not just Settings — servers/stacks
+// data is the interface here, so these need the same guard as the write routes below.
+app.use('/api/servers', requireAdmin, serversRouter);
+app.use('/api/stacks', requireAdmin, stacksRouter);
 app.use('/api/admin', adminRouter);
 // More specific than /api/settings below, so must be registered first.
 app.use('/api/settings/icons', iconsRouter);
@@ -52,7 +55,8 @@ app.use('/api', (_req, res) => {
 	res.status(404).json({ error: 'Not found' });
 });
 
-// In dev, client/dist doesn't exist (Vite's own dev server handles the SPA on :5173) —
+// In dev, client/dist doesn't exist (Vite's own dev server handles the SPA on :54173, proxying
+// /api to this server on :44000) —
 // these just no-op. In prod, the built client is served from the same origin/port as the API.
 app.use(express.static(clientDist));
 app.use((_req, res) => {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Button, Card, Center, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
 import { Logo } from '../layout/Logo';
+import { FieldLabel } from '../common/FieldLabel';
 import { useOnboarding } from '../../hooks/useOnboarding';
 
 export function OnboardingScreen() {
@@ -35,7 +36,12 @@ export function OnboardingScreen() {
 					<form onSubmit={handleSubmit}>
 						<Stack>
 							<TextInput
-								label="Komodo URL"
+								label={
+									<FieldLabel
+										label="Komodo URL"
+										tooltip="The base URL where Dashmodo can reach your Komodo instance, including its port."
+									/>
+								}
 								placeholder="http://localhost:9120"
 								value={komodoUrl}
 								onChange={(e) => setKomodoUrl(e.currentTarget.value)}
@@ -43,20 +49,34 @@ export function OnboardingScreen() {
 								autoFocus
 							/>
 							<PasswordInput
-								label="API key"
+								label={
+									<FieldLabel
+										label="API key"
+										tooltip="In Komodo: Settings → Users → click your user → API Keys section."
+									/>
+								}
 								value={komodoApiKey}
 								onChange={(e) => setKomodoApiKey(e.currentTarget.value)}
 								required
 							/>
 							<PasswordInput
-								label="API secret"
+								label={
+									<FieldLabel
+										label="API secret"
+										tooltip="Shown once alongside the API key when it's created in Komodo — copy it then, Komodo won't show it again."
+									/>
+								}
 								value={komodoApiSecret}
 								onChange={(e) => setKomodoApiSecret(e.currentTarget.value)}
 								required
 							/>
 							<PasswordInput
-								label="Admin password"
-								description="Protects the Settings panel. Leave blank to leave it open on your LAN."
+								label={
+									<FieldLabel
+										label="Admin password"
+										tooltip="Protects the Settings panel. Leave blank to leave it open on your LAN."
+									/>
+								}
 								value={adminPassword}
 								onChange={(e) => setAdminPassword(e.currentTarget.value)}
 							/>
@@ -65,7 +85,7 @@ export function OnboardingScreen() {
 									{onboarding.error instanceof Error ? onboarding.error.message : 'Setup failed'}
 								</Alert>
 							) : null}
-							<Button type="submit" loading={onboarding.isPending}>
+							<Button type="submit" loading={onboarding.isPending} mt="lg">
 								Connect
 							</Button>
 						</Stack>

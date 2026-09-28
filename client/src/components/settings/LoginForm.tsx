@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, Button, Card, PasswordInput, Stack, Title } from '@mantine/core';
+import { Alert, Button, Card, PasswordInput, Stack, Text, Title } from '@mantine/core';
+import { Logo } from '../layout/Logo';
 import { useAdminLogin } from '../../hooks/useAdmin';
 
 export function LoginForm() {
@@ -7,9 +8,16 @@ export function LoginForm() {
 	const login = useAdminLogin();
 
 	return (
-		<Card withBorder maw={360} p="lg">
+		<Card withBorder maw={420} w="100%" p="xl">
 			<Stack>
-				<Title order={3}>Admin login</Title>
+				<Stack align="center" gap={6}>
+					<Logo size={40} />
+					<Title order={3}>Admin login</Title>
+					<Text size="sm" c="dimmed" ta="center">
+						Enter the admin password to continue.
+					</Text>
+				</Stack>
+
 				<form
 					onSubmit={(e) => {
 						e.preventDefault();
@@ -28,7 +36,7 @@ export function LoginForm() {
 								{login.error instanceof Error ? login.error.message : 'Login failed'}
 							</Alert>
 						) : null}
-						<Button type="submit" loading={login.isPending}>
+						<Button type="submit" loading={login.isPending} mt="lg">
 							Log in
 						</Button>
 					</Stack>

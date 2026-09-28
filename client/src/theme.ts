@@ -1,4 +1,4 @@
-import { createTheme } from '@mantine/core';
+import { createTheme, InputWrapper } from '@mantine/core';
 
 // Background confirmed from Komodo's own source (ui/src/index.scss): #0f1115.
 // The rest of the palette is calibrated around it — Komodo's actual color tokens live in
@@ -11,8 +11,31 @@ export const theme = createTheme({
 		fontFamily: 'Space Grotesk, sans-serif',
 		fontWeight: '700'
 	},
-	primaryColor: 'blue',
+	primaryColor: 'brand',
+	components: {
+		// Mantine's default label sits right on top of the input with almost no gap — nudge it down
+		// a bit across every TextInput/PasswordInput/Select/etc. in the app. InputLabel renders its
+		// styles under the "InputWrapper" theme name (not "InputLabel"), so the override has to live
+		// here to actually take effect.
+		InputWrapper: InputWrapper.extend({
+			styles: { label: { marginBottom: 8 } }
+		})
+	},
 	colors: {
+		// The logo's #456959, expanded into a 10-shade scale (base sits at index 6, Mantine's
+		// convention for the "main" shade) — drives buttons and other primary-color UI.
+		brand: [
+			'#eff5f3',
+			'#d9e8e1',
+			'#b9d5c8',
+			'#93beab',
+			'#6ca78d',
+			'#548c73',
+			'#456959', // 6 — logo color
+			'#335546',
+			'#274136',
+			'#1b2e26'
+		],
 		dark: [
 			'#e9eaed', // 0 — primary text
 			'#c8cad0', // 1

@@ -1,5 +1,4 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
-import { env } from '../env.js';
 import { store } from '../db/store.js';
 
 export const COOKIE_NAME = 'dashmodo_admin';
@@ -12,7 +11,7 @@ export const COOKIE_OPTIONS = {
 };
 
 function sign(payload: string): string {
-	return createHmac('sha256', env.ADMIN_SESSION_SECRET).update(payload).digest('base64url');
+	return createHmac('sha256', store.getSessionSecret()).update(payload).digest('base64url');
 }
 
 export function createSessionCookie(): string {
