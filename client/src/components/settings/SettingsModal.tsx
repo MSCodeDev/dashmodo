@@ -166,6 +166,10 @@ export function SettingsModal({ opened, onClose }: { opened: boolean; onClose: (
 							) : null}
 						</Tabs.Panel>
 					</Tabs>
+
+					<Text size="xs" c="dimmed" ta="right">
+						v{import.meta.env.VITE_APP_VERSION || 'dev'}
+					</Text>
 				</Stack>
 			) : null}
 		</Modal>

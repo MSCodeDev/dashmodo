@@ -5,24 +5,55 @@ CPU/memory/disk graphs, and one-click links to each stack's actual running servi
 Komodo's own quick-links config, or derived from the host's address and published container port when
 Komodo doesn't have one configured. Includes an admin page for hiding stacks and overriding links by hand.
 
-## Requirements
+## Deploy (Docker Compose)
 
-- Node.js 22+
-- A running Komodo instance and an API key/secret pair (Komodo → Settings → API Keys)
+This is the intended way to run Dashmodo. Every push to `master` builds and publishes a new
+version to GHCR via `.github/workflows/docker-publish.yml` — `docker-compose.yml` already points
+at it, so no local build is needed:
 
-## Setup
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Open http://localhost:44000. No env vars or manual config to set up front — the first visit shows
+an onboarding screen that collects the Komodo URL, API key/secret, and an optional admin password.
+Everything (including the admin session secret) is generated/persisted, hashed as needed, to a
+JSON file in the `dashmodo-data` named volume, and is editable afterwards from the Settings panel.
+
+To build the image locally instead of pulling (e.g. testing a `Dockerfile` change):
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+GHCR packages are private by default. If `docker compose pull` gets a 401/403 on the homelab host,
+either make the package public (repo → Packages → dashmodo → Package settings) or
+`docker login ghcr.io` there first with a PAT that has `read:packages`.
+
+### Versioning
+
+Fully automated, no manual release step: every push to `master` tags and publishes
+`<major>.<minor>.<run number>` (e.g. `1.0.7`), alongside a `latest` tag and a matching git tag
+(`v1.0.7`). `<major>.<minor>` is a hardcoded `VERSION_PREFIX` in the workflow — bump it by hand
+there for a deliberate milestone; the patch number always auto-increments. The running version is
+shown at the bottom of the Settings modal.
+
+## Development
+
+Requires Node.js 22+ and a running Komodo instance with an API key/secret pair (Komodo → Settings
+→ Users → click your user → API Keys). `npm install`/`npm run dev` is for local development only —
+it is not the deployment path, see above for that.
 
 ```bash
 npm install
 npm run dev             # runs server (:44000) + client (:54173) together
 ```
 
-Open http://localhost:54173 — the Vite dev server proxies `/api` to the Express server on :44000. On
-first run, Dashmodo shows an onboarding screen to collect the Komodo URL, API key/secret, and an
-optional admin password. No env vars or manual config files needed — everything (including the
-admin session secret) is generated on first boot and persisted, hashed/as-needed, to
-`server/data/dashmodo.json`; connection details and the admin password are editable afterwards from
-the Settings panel.
+Open http://localhost:54173 — the Vite dev server proxies `/api` to the Express server on :44000.
+Same onboarding/config behavior as above, persisted to `server/data/dashmodo.json` on disk instead
+of a Docker volume.
 
 ## How stack links are resolved
 
@@ -35,17 +66,6 @@ For each stack, in order:
 3. No link — the stack card renders without a click-through until Komodo has a quick-link or the
    server has a usable address.
 
-## Production / Docker
-
-```bash
-docker compose up --build
-```
-
-No env vars to set. Serves the built client and the API from the same container on port `44000`
-(mapped in `docker-compose.yml`). All config — including Komodo connection details and the admin
-session secret — persists as a JSON file in a named volume (`dashmodo-data`), set via the
-onboarding flow on first launch.
-
 ## Project layout
 
 - `client/` — React 19 + Vite + Mantine + Recharts + TanStack Query
@@ -54,5 +74,7 @@ onboarding flow on first launch.
   server or native dependency needed.
 - `.project/` — gitignored: local reference clones (Komodo, gethomepage) and the working milestone
   checklist, not part of the shipped app
+- `.github/workflows/docker-publish.yml` — builds, versions, and pushes the image to GHCR on every
+  push to `master`
 
 See `AGENTS.md` for architectural notes and conventions.

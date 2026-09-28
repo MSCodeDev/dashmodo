@@ -1,5 +1,8 @@
 services:
   dashmodo:
+    image: ghcr.io/mscodedev/dashmodo:latest
+    # Only used by `docker compose build` (e.g. testing a Dockerfile change) — `docker compose pull`
+    # / `up -d` use the published image above instead of building locally.
     build: .
     ports:
       - '44000:44000'
