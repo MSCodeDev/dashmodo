@@ -39,6 +39,12 @@ an onboarding screen that collects the Komodo URL, API key/secret, and an option
 Everything (including the admin session secret) is generated/persisted, hashed as needed, to a
 JSON file in the `dashmodo-data` named volume, and is editable afterwards from the Settings panel.
 
+Onboarding also asks for a **setup token**, printed to the container logs
+(`docker compose logs dashmodo`) on first boot and required until onboarding completes. This
+closes the obvious hole in "no manual config needed": without it, whoever reaches the URL first —
+not necessarily you — could onboard the instance with their own Komodo credentials and an admin
+password of their choosing, locking you out of your own deployment.
+
 To build the image locally instead of pulling (e.g. testing a `Dockerfile` change), swap
 `docker compose pull` for `docker compose build`.
 

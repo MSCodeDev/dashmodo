@@ -16,7 +16,7 @@ const upload = multer({
 	limits: { fileSize: 2 * 1024 * 1024 },
 	fileFilter: (_req, file, cb) => {
 		if (!isAllowedMime(file.mimetype)) {
-			cb(new Error('Unsupported file type — use PNG, JPEG, WebP, GIF, or SVG'));
+			cb(new Error('Unsupported file type — use PNG, JPEG, WebP, or GIF'));
 			return;
 		}
 		cb(null, true);

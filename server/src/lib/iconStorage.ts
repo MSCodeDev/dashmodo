@@ -8,11 +8,13 @@ export function ensureIconsDir() {
 	mkdirSync(ICONS_DIR, { recursive: true });
 }
 
+// No SVG: it can carry an inline <script>, which executes if a browser is navigated directly to
+// the uploaded file's URL (served statically, publicly readable) — a stored XSS vector, and this
+// route was previously open to anyone whenever no admin password had been set.
 const ALLOWED_MIME_TO_EXT: Record<string, string> = {
 	'image/png': 'png',
 	'image/jpeg': 'jpg',
 	'image/webp': 'webp',
-	'image/svg+xml': 'svg',
 	'image/gif': 'gif'
 };
 

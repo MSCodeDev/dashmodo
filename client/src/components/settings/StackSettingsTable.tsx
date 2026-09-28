@@ -69,7 +69,7 @@ export function StackSettingsTable({ rows, pending, onChange, iconStyle }: Props
 										w={200}
 									/>
 									<FileButton
-										accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+										accept="image/png,image/jpeg,image/webp,image/gif"
 										onChange={(file) => {
 											if (!file) return;
 											upload.mutate(file, {

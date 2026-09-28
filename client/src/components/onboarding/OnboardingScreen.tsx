@@ -5,6 +5,7 @@ import { FieldLabel } from '../common/FieldLabel';
 import { useOnboarding } from '../../hooks/useOnboarding';
 
 export function OnboardingScreen() {
+	const [setupToken, setSetupToken] = useState('');
 	const [komodoUrl, setKomodoUrl] = useState('');
 	const [komodoApiKey, setKomodoApiKey] = useState('');
 	const [komodoApiSecret, setKomodoApiSecret] = useState('');
@@ -14,6 +15,7 @@ export function OnboardingScreen() {
 	function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		onboarding.mutate({
+			setupToken,
 			komodoUrl,
 			komodoApiKey,
 			komodoApiSecret,
@@ -35,6 +37,18 @@ export function OnboardingScreen() {
 
 					<form onSubmit={handleSubmit}>
 						<Stack>
+							<PasswordInput
+								label={
+									<FieldLabel
+										label="Setup token"
+										tooltip="Printed to the server console (e.g. docker compose logs dashmodo) when the container starts, until onboarding is complete."
+									/>
+								}
+								value={setupToken}
+								onChange={(e) => setSetupToken(e.currentTarget.value)}
+								required
+								autoFocus
+							/>
 							<TextInput
 								label={
 									<FieldLabel
@@ -46,7 +60,6 @@ export function OnboardingScreen() {
 								value={komodoUrl}
 								onChange={(e) => setKomodoUrl(e.currentTarget.value)}
 								required
-								autoFocus
 							/>
 							<PasswordInput
 								label={
@@ -74,11 +87,12 @@ export function OnboardingScreen() {
 								label={
 									<FieldLabel
 										label="Admin password"
-										tooltip="Protects the Settings panel. Leave blank to leave it open on your LAN."
+										tooltip="Protects the Settings panel. Leave blank to leave it open on your LAN. At least 4 characters if set."
 									/>
 								}
 								value={adminPassword}
 								onChange={(e) => setAdminPassword(e.currentTarget.value)}
+								minLength={4}
 							/>
 							{onboarding.isError ? (
 								<Alert color="red">

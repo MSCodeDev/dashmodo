@@ -4,6 +4,10 @@ import { store } from '../db/store.js';
 export const COOKIE_NAME = 'dashmodo_admin';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
+// `secure` is added at the call site from `req.secure` (Express respects `trust proxy`, set in
+// app.ts) rather than hardcoded here — hardcoding `true` would silently break login in local dev
+// (plain HTTP), and hardcoding `false` would let the cookie travel over an unencrypted connection
+// in production.
 export const COOKIE_OPTIONS = {
 	httpOnly: true,
 	sameSite: 'lax' as const,
@@ -57,4 +61,12 @@ export function checkPassword(candidate: string): boolean {
 	const hashBuf = Buffer.from(hash, 'hex');
 	const candidateBuf = scryptSync(candidate, salt, 64);
 	return hashBuf.length === candidateBuf.length && timingSafeEqual(hashBuf, candidateBuf);
+}
+
+export function checkSetupToken(candidate: string): boolean {
+	const expected = store.getSetupToken();
+	if (!expected) return false;
+	const expectedBuf = Buffer.from(expected);
+	const candidateBuf = Buffer.from(candidate);
+	return expectedBuf.length === candidateBuf.length && timingSafeEqual(expectedBuf, candidateBuf);
 }

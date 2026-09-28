@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 
 export interface OnboardingPayload {
+	setupToken: string;
 	komodoUrl: string;
 	komodoApiKey: string;
 	komodoApiSecret: string;

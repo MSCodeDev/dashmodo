@@ -40,12 +40,13 @@ export function ConnectionSettingsForm({ settings, connection, pending, onChange
 				label={
 					<FieldLabel
 						label="Admin password"
-						tooltip="Protects this Settings panel. Leave blank to keep it unchanged."
+						tooltip="Protects this Settings panel. Leave blank to keep it unchanged. At least 4 characters if set."
 					/>
 				}
 				placeholder={connection?.adminPasswordSet ? '•••••••• (unchanged)' : 'Not set'}
 				value={pending.adminPassword ?? ''}
 				onChange={(e) => onChange({ adminPassword: e.currentTarget.value })}
+				minLength={4}
 			/>
 
 			<div>

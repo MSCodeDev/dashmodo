@@ -8,12 +8,13 @@ import {
 	COOKIE_OPTIONS,
 	verifySessionCookie
 } from '../lib/auth.js';
+import { authRateLimit } from '../middleware/rateLimit.js';
 
 export const adminRouter = Router();
 
 const loginSchema = z.object({ password: z.string() });
 
-adminRouter.post('/login', (req, res) => {
+adminRouter.post('/login', authRateLimit, (req, res) => {
 	const parsed = loginSchema.safeParse(req.body);
 	if (!parsed.success) {
 		res.status(400).json({ error: 'Invalid request body' });
@@ -23,12 +24,12 @@ adminRouter.post('/login', (req, res) => {
 		res.status(401).json({ error: 'Incorrect password' });
 		return;
 	}
-	res.cookie(COOKIE_NAME, createSessionCookie(), COOKIE_OPTIONS);
+	res.cookie(COOKIE_NAME, createSessionCookie(), { ...COOKIE_OPTIONS, secure: req.secure });
 	res.json({ ok: true });
 });
 
-adminRouter.post('/logout', (_req, res) => {
-	res.clearCookie(COOKIE_NAME);
+adminRouter.post('/logout', (req, res) => {
+	res.clearCookie(COOKIE_NAME, { ...COOKIE_OPTIONS, secure: req.secure });
 	res.json({ ok: true });
 });
 

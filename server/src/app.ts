@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { serversRouter } from './routes/servers.js';
 import { stacksRouter } from './routes/stacks.js';
 import { adminRouter } from './routes/admin.js';
@@ -17,6 +18,36 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const clientDist = path.join(__dirname, '../../client/dist');
 
 export const app = express();
+
+// Trust exactly one hop (the reverse proxy) so `req.secure`/`req.ip` reflect the real client when
+// deployed behind Traefik/Caddy/nginx/a tunnel — needed for the Secure cookie flag below and for
+// the rate limiter to key on the actual client IP rather than the proxy's.
+app.set('trust proxy', 1);
+
+app.use(
+	helmet({
+		contentSecurityPolicy: {
+			directives: {
+				defaultSrc: ["'self'"],
+				scriptSrc: ["'self'"],
+				// React inline `style={{...}}` props and the admin custom-CSS feature both need this —
+				// it's CSS-only, not script execution.
+				styleSrc: ["'self'", "'unsafe-inline'"],
+				imgSrc: ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
+				fontSrc: ["'self'", 'data:'],
+				connectSrc: ["'self'"],
+				objectSrc: ["'none'"],
+				baseUri: ["'self'"],
+				formAction: ["'self'"],
+				frameAncestors: ["'none'"]
+			}
+		},
+		// Disabled: default (require-corp) would block the selfh.st icon CDN's <img> responses,
+		// which don't send a matching Cross-Origin-Resource-Policy header.
+		crossOriginEmbedderPolicy: false,
+		frameguard: { action: 'deny' }
+	})
+);
 
 app.use(express.json());
 app.use(cookieParser());

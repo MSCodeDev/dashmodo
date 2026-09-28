@@ -48,6 +48,13 @@ interface StoreData {
 	 * manual setup — the last thing that used to need a manually-set env var.
 	 */
 	sessionSecret: string;
+	/**
+	 * Required to complete onboarding — printed to the server console on boot, never exposed via
+	 * any API. Without this, an instance reachable from the internet before its operator visits it
+	 * is a "first request wins" race: anyone could onboard it with their own Komodo credentials and
+	 * an admin password of their choosing, locking the real operator out.
+	 */
+	setupToken: string;
 }
 
 const DEFAULT_APP_SETTINGS: AppSettingsData = {
@@ -69,7 +76,7 @@ const DEFAULT_APP_SETTINGS: AppSettingsData = {
 function load(): StoreData {
 	mkdirSync(dirname(DATA_FILE_PATH), { recursive: true });
 	if (!existsSync(DATA_FILE_PATH)) {
-		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS }, sessionSecret: '' };
+		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS }, sessionSecret: '', setupToken: '' };
 	}
 	try {
 		const raw = readFileSync(DATA_FILE_PATH, 'utf8');
@@ -77,11 +84,12 @@ function load(): StoreData {
 		return {
 			resourceSettings: parsed.resourceSettings ?? [],
 			appSettings: { ...DEFAULT_APP_SETTINGS, ...parsed.appSettings },
-			sessionSecret: parsed.sessionSecret ?? ''
+			sessionSecret: parsed.sessionSecret ?? '',
+			setupToken: parsed.setupToken ?? ''
 		};
 	} catch (err) {
 		console.error(`Failed to read/parse ${DATA_FILE_PATH}, starting with defaults:`, err);
-		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS }, sessionSecret: '' };
+		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS }, sessionSecret: '', setupToken: '' };
 	}
 }
 
@@ -98,6 +106,13 @@ function persist() {
 // so it's stable across restarts; regenerating it on every boot would silently log everyone out.
 if (!data.sessionSecret) {
 	data.sessionSecret = randomBytes(32).toString('hex');
+	persist();
+}
+
+// Short and copy-paste friendly (printed to the console for the operator to type into the
+// onboarding form) — 72 bits is plenty given login/onboarding attempts are rate-limited.
+if (!data.setupToken) {
+	data.setupToken = randomBytes(9).toString('base64url');
 	persist();
 }
 
@@ -150,5 +165,9 @@ export const store = {
 
 	getSessionSecret(): string {
 		return data.sessionSecret;
+	},
+
+	getSetupToken(): string {
+		return data.setupToken;
 	}
 };

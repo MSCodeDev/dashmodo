@@ -108,7 +108,7 @@ const appSettingsUpdateSchema = z.object({
 	komodoUrl: z.string().url().optional(),
 	komodoApiKey: z.string().min(1).optional(),
 	komodoApiSecret: z.string().min(1).optional(),
-	adminPassword: z.string().min(1).optional()
+	adminPassword: z.string().min(4).optional()
 });
 
 settingsRouter.put('/app', async (req, res) => {
