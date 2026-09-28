@@ -1,12 +1,9 @@
 import type { Types } from 'komodo_client';
-import { env } from '../env.js';
 
-const DEFAULT_DENY_PORTS = [
+export const DEFAULT_DENY_PORTS = [
 	22, 2222, 21, 25, 53, 111, 123, 137, 138, 139, 445, 465, 587, 636, 989, 990, 2049, 2181, 3306,
 	5432, 5672, 6379, 9092, 9200, 9300, 11211, 15672, 27017
 ];
-
-const denyPorts = new Set([...DEFAULT_DENY_PORTS, ...env.DASHMODO_PORT_DENYLIST]);
 
 function extractHost(address: string): string | undefined {
 	try {
@@ -41,6 +38,8 @@ export interface ResolveStackLinkInput {
 	 * agent reachable at `periphery:8120`, not from a browser) and `external_address` isn't set.
 	 */
 	serverLinkOverride?: string | null;
+	/** Extra ports to treat as non-web, merged with DEFAULT_DENY_PORTS. From admin settings. */
+	extraDenyPorts?: number[];
 }
 
 /**
@@ -58,6 +57,8 @@ export function resolveStackLink(input: ResolveStackLinkInput): ResolvedLink {
 	if (!host) {
 		return { source: 'none' };
 	}
+
+	const denyPorts = new Set([...DEFAULT_DENY_PORTS, ...(input.extraDenyPorts ?? [])]);
 
 	const ports = (input.services ?? [])
 		.flatMap((s) => s.container?.ports ?? [])

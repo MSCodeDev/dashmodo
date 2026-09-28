@@ -1,10 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
-import { env } from '../env.js';
+import { store } from '../db/store.js';
 import { COOKIE_NAME, verifySessionCookie } from '../lib/auth.js';
 
-/** No-op when ADMIN_PASSWORD is unset — fine on a trusted homelab LAN. */
+/** No-op when no admin password has been set yet (pre-onboarding) — fine on a trusted homelab LAN. */
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-	if (!env.ADMIN_PASSWORD) {
+	if (!store.getAppSettings().adminPasswordHash) {
 		next();
 		return;
 	}

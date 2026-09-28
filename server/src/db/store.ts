@@ -1,6 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { env } from '../env.js';
+
+// Not env-configurable — this is where the store finds *all* other config (Komodo connection,
+// admin password, etc), so its own location can't live inside itself. Fixed relative to the
+// server's working directory: `server/` in dev, `/app` in the Docker image (matches the volume
+// mount in docker-compose.yml).
+export const DATA_FILE_PATH = './data/dashmodo.json';
 
 export type ResourceType = 'server' | 'stack';
 export type ColorScheme = 'system' | 'light' | 'dark';
@@ -23,6 +28,13 @@ export interface AppSettingsData {
 	defaultIconStyle: IconStyle;
 	customCss: string | null;
 	themeColor: string | null;
+	/** Extra ports to skip when deriving a stack link, merged with links.ts's built-in defaults. */
+	portDenylist: number[];
+	// Set via onboarding on first run, editable later in Settings. Not in env anymore.
+	komodoUrl: string | null;
+	komodoApiKey: string | null;
+	komodoApiSecret: string | null;
+	adminPasswordHash: string | null;
 	updatedAt: string;
 }
 
@@ -39,23 +51,28 @@ const DEFAULT_APP_SETTINGS: AppSettingsData = {
 	defaultIconStyle: 'default',
 	customCss: null,
 	themeColor: null,
+	portDenylist: [],
+	komodoUrl: null,
+	komodoApiKey: null,
+	komodoApiSecret: null,
+	adminPasswordHash: null,
 	updatedAt: new Date(0).toISOString()
 };
 
 function load(): StoreData {
-	mkdirSync(dirname(env.DASHMODO_DATA_FILE), { recursive: true });
-	if (!existsSync(env.DASHMODO_DATA_FILE)) {
+	mkdirSync(dirname(DATA_FILE_PATH), { recursive: true });
+	if (!existsSync(DATA_FILE_PATH)) {
 		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS } };
 	}
 	try {
-		const raw = readFileSync(env.DASHMODO_DATA_FILE, 'utf8');
+		const raw = readFileSync(DATA_FILE_PATH, 'utf8');
 		const parsed = JSON.parse(raw) as Partial<StoreData>;
 		return {
 			resourceSettings: parsed.resourceSettings ?? [],
 			appSettings: { ...DEFAULT_APP_SETTINGS, ...parsed.appSettings }
 		};
 	} catch (err) {
-		console.error(`Failed to read/parse ${env.DASHMODO_DATA_FILE}, starting with defaults:`, err);
+		console.error(`Failed to read/parse ${DATA_FILE_PATH}, starting with defaults:`, err);
 		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS } };
 	}
 }
@@ -64,9 +81,9 @@ const data = load();
 
 /** Write-to-temp-then-rename so a crash mid-write can't corrupt the file (rename is atomic on POSIX). */
 function persist() {
-	const tmpPath = `${env.DASHMODO_DATA_FILE}.tmp`;
+	const tmpPath = `${DATA_FILE_PATH}.tmp`;
 	writeFileSync(tmpPath, JSON.stringify(data, null, 2));
-	renameSync(tmpPath, env.DASHMODO_DATA_FILE);
+	renameSync(tmpPath, DATA_FILE_PATH);
 }
 
 export const store = {
@@ -109,5 +126,10 @@ export const store = {
 	updateAppSettings(patch: Partial<Omit<AppSettingsData, 'updatedAt'>>): void {
 		data.appSettings = { ...data.appSettings, ...patch, updatedAt: new Date().toISOString() };
 		persist();
+	},
+
+	isKomodoConfigured(): boolean {
+		const s = data.appSettings;
+		return Boolean(s.komodoUrl && s.komodoApiKey && s.komodoApiSecret);
 	}
 };

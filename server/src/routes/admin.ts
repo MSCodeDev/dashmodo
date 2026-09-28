@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { env } from '../env.js';
+import { store } from '../db/store.js';
 import {
 	checkPassword,
 	createSessionCookie,
@@ -33,7 +33,7 @@ adminRouter.post('/logout', (_req, res) => {
 });
 
 adminRouter.get('/session', (req, res) => {
-	const passwordRequired = Boolean(env.ADMIN_PASSWORD);
+	const passwordRequired = Boolean(store.getAppSettings().adminPasswordHash);
 	const authenticated = !passwordRequired || verifySessionCookie(req.cookies?.[COOKIE_NAME]);
 	res.json({ authenticated, passwordRequired });
 });

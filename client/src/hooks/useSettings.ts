@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { toast } from '../lib/toast';
-import type { AppSettings, ServerSettingsRow, StackSettingsRow } from '../lib/types';
+import type { AppSettings, ConnectionSettings, ServerSettingsRow, StackSettingsRow } from '../lib/types';
+
+export function useConnectionSettings() {
+	return useQuery({
+		queryKey: ['settings-connection'],
+		queryFn: () => api.get<ConnectionSettings>('/settings/connection')
+	});
+}
 
 export function useSettingsStacks() {
 	return useQuery({
@@ -27,7 +34,11 @@ export interface PendingServerChange {
 	linkOverride?: string | null;
 }
 
-export type PendingAppChange = Partial<AppSettings>;
+export type PendingAppChange = Partial<AppSettings> & {
+	komodoApiKey?: string;
+	komodoApiSecret?: string;
+	adminPassword?: string;
+};
 
 /** Batches every pending edit (stacks, servers, global settings) behind one Save action. */
 export function useSaveAllSettings() {
@@ -48,6 +59,7 @@ export function useSaveAllSettings() {
 			]);
 			qc.invalidateQueries({ queryKey: ['settings-stacks'] });
 			qc.invalidateQueries({ queryKey: ['settings-servers'] });
+			qc.invalidateQueries({ queryKey: ['settings-connection'] });
 			qc.invalidateQueries({ queryKey: ['stacks'] });
 			qc.invalidateQueries({ queryKey: ['servers'] });
 			qc.invalidateQueries({ queryKey: ['config'] });

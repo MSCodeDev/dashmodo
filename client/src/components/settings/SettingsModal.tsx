@@ -4,6 +4,7 @@ import { useAdminLogout, useAdminSession } from '../../hooks/useAdmin';
 import { useConfig } from '../../hooks/useConfig';
 import { useErrorToast } from '../../hooks/useErrorToast';
 import {
+	useConnectionSettings,
 	useSaveAllSettings,
 	useSettingsServers,
 	useSettingsStacks,
@@ -23,12 +24,14 @@ export function SettingsModal({ opened, onClose }: { opened: boolean; onClose: (
 	const config = useConfig();
 	const stacksQuery = useSettingsStacks();
 	const serversQuery = useSettingsServers();
+	const connectionQuery = useConnectionSettings();
 	const { save, isPending } = useSaveAllSettings();
 
 	useErrorToast(session.isError, session.error, 'Failed to check admin session');
 	useErrorToast(config.isError, config.error, 'Failed to load settings');
 	useErrorToast(stacksQuery.isError, stacksQuery.error, 'Failed to load stack settings');
 	useErrorToast(serversQuery.isError, serversQuery.error, 'Failed to load server settings');
+	useErrorToast(connectionQuery.isError, connectionQuery.error, 'Failed to load connection settings');
 
 	const [pendingStacks, setPendingStacks] = useState<Record<string, PendingStackChange>>({});
 	const [pendingServers, setPendingServers] = useState<Record<string, PendingServerChange>>({});
@@ -114,6 +117,7 @@ export function SettingsModal({ opened, onClose }: { opened: boolean; onClose: (
 							{config.data ? (
 								<GeneralSettingsForm
 									settings={config.data.appSettings}
+									connection={connectionQuery.data}
 									pending={pendingApp}
 									onChange={(patch) => setPendingApp((prev) => ({ ...prev, ...patch }))}
 								/>

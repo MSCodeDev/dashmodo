@@ -7,7 +7,7 @@ import { stacksRouter } from './routes/stacks.js';
 import { adminRouter } from './routes/admin.js';
 import { settingsRouter } from './routes/settings.js';
 import { iconsRouter } from './routes/icons.js';
-import { env } from './env.js';
+import { onboardingRouter } from './routes/onboarding.js';
 import { store } from './db/store.js';
 import { ICONS_DIR } from './lib/iconStorage.js';
 
@@ -27,9 +27,16 @@ app.get('/api/health', (_req, res) => {
 // Not secret (unlike the API key/secret) — safe to expose so every viewer can link to Komodo
 // and render the admin-configured display settings (theme, columns, custom CSS, etc).
 app.get('/api/config', (_req, res) => {
-	res.json({ komodoUrl: env.KOMODO_URL, appSettings: store.getAppSettings() });
+	const { komodoApiKey, komodoApiSecret, adminPasswordHash, ...publicAppSettings } =
+		store.getAppSettings();
+	res.json({
+		komodoUrl: publicAppSettings.komodoUrl,
+		needsOnboarding: !store.isKomodoConfigured(),
+		appSettings: publicAppSettings
+	});
 });
 
+app.use('/api/onboarding', onboardingRouter);
 app.use('/api/servers', serversRouter);
 app.use('/api/stacks', stacksRouter);
 app.use('/api/admin', adminRouter);

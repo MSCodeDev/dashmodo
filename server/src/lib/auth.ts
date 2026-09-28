@@ -1,5 +1,6 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { env } from '../env.js';
+import { store } from '../db/store.js';
 
 export const COOKIE_NAME = 'dashmodo_admin';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
@@ -41,9 +42,20 @@ export function verifySessionCookie(value: string | undefined): boolean {
 	}
 }
 
+/** Password is stored hashed (JSON file on disk, not an ephemeral env var) — `salt:hash` hex pair. */
+export function hashPassword(password: string): string {
+	const salt = randomBytes(16).toString('hex');
+	const hash = scryptSync(password, salt, 64).toString('hex');
+	return `${salt}:${hash}`;
+}
+
 export function checkPassword(candidate: string): boolean {
-	if (!env.ADMIN_PASSWORD) return false;
-	const a = Buffer.from(candidate);
-	const b = Buffer.from(env.ADMIN_PASSWORD);
-	return a.length === b.length && timingSafeEqual(a, b);
+	const stored = store.getAppSettings().adminPasswordHash;
+	if (!stored) return false;
+	const [salt, hash] = stored.split(':');
+	if (!salt || !hash) return false;
+
+	const hashBuf = Buffer.from(hash, 'hex');
+	const candidateBuf = scryptSync(candidate, salt, 64);
+	return hashBuf.length === candidateBuf.length && timingSafeEqual(hashBuf, candidateBuf);
 }

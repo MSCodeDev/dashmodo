@@ -28,7 +28,12 @@ async function resolveLink(
 	} catch {
 		services = undefined;
 	}
-	return resolveStackLink({ server: serverInfo, services, serverLinkOverride });
+	return resolveStackLink({
+		server: serverInfo,
+		services,
+		serverLinkOverride,
+		extraDenyPorts: store.getAppSettings().portDenylist
+	});
 }
 
 stacksRouter.get('/', async (_req, res) => {
@@ -84,7 +89,8 @@ stacksRouter.get('/:id', async (req, res) => {
 			stackConfigLinks: stack.config?.links,
 			server: serverInfo,
 			services,
-			serverLinkOverride
+			serverLinkOverride,
+			extraDenyPorts: store.getAppSettings().portDenylist
 		});
 
 		const icon = setting?.iconOverride || slugifyIconRef(stack.name);

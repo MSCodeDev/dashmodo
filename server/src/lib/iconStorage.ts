@@ -1,8 +1,8 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { env } from '../env.js';
+import { DATA_FILE_PATH } from '../db/store.js';
 
-export const ICONS_DIR = path.join(path.dirname(env.DASHMODO_DATA_FILE), 'icons');
+export const ICONS_DIR = path.join(path.dirname(DATA_FILE_PATH), 'icons');
 
 export function ensureIconsDir() {
 	mkdirSync(ICONS_DIR, { recursive: true });

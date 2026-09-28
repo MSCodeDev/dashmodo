@@ -93,11 +93,23 @@ export interface AppSettings {
 	defaultIconStyle: IconStyle;
 	customCss: string | null;
 	themeColor: string | null;
+	portDenylist: number[];
+	komodoUrl: string | null;
 }
 
 export interface AppConfig {
-	komodoUrl: string;
+	komodoUrl: string | null;
+	needsOnboarding: boolean;
 	appSettings: AppSettings;
+}
+
+/** Admin-only, non-secret view of the Komodo connection + admin password — "is it set" booleans. */
+export interface ConnectionSettings {
+	komodoUrl: string | null;
+	komodoApiKeySet: boolean;
+	komodoApiSecretSet: boolean;
+	adminPasswordSet: boolean;
+	portDenylist: number[];
 }
 
 export interface StackSettingsRow {

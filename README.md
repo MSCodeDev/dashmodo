@@ -14,23 +14,25 @@ Komodo doesn't have one configured. Includes an admin page for hiding stacks and
 
 ```bash
 npm install
-cp .env.example .env   # fill in KOMODO_URL, KOMODO_API_KEY, KOMODO_API_SECRET
+cp .env.example .env   # optionally set ADMIN_SESSION_SECRET
 npm run dev             # runs server (:4000) + client (:5173) together
 ```
 
-Open http://localhost:5173 — the Vite dev server proxies `/api` to the Express server on :4000.
+Open http://localhost:5173 — the Vite dev server proxies `/api` to the Express server on :4000. On
+first run, Dashmodo shows an onboarding screen to collect the Komodo URL, API key/secret, and an
+optional admin password — these persist to a JSON file, not env vars, and are editable afterwards
+from the Settings panel.
 
 ## Environment variables
 
 | Variable | Required | Description |
 |---|---|---|
-| `KOMODO_URL` | yes | Base URL of your Komodo instance |
-| `KOMODO_API_KEY` / `KOMODO_API_SECRET` | yes | API key pair from Komodo (Settings → API Keys). Server-side only — never sent to the browser. |
 | `PORT` | no | Server port (default `4000`) |
-| `DASHMODO_DATA_FILE` | no | JSON file path for admin settings (default `./data/dashmodo.json`) |
-| `ADMIN_PASSWORD` | no | Password gating the `/settings` page. Leave unset to disable auth entirely (fine on a trusted LAN). |
-| `ADMIN_SESSION_SECRET` | no (required if `ADMIN_PASSWORD` is set) | Secret used to sign the admin session cookie |
-| `DASHMODO_PORT_DENYLIST` | no | Comma-separated extra ports to exclude when deriving a stack link from a published container port (merged with a built-in deny-list of ssh/db/queue ports) |
+| `ADMIN_SESSION_SECRET` | no (required if an admin password is set) | Secret used to sign the admin session cookie — a deployment-level concern distinct from the admin password itself |
+
+Everything else — Komodo URL/API key/secret, admin password, and the extra port denylist for link
+derivation — is set via the onboarding flow and stored (the password hashed) in
+`server/data/dashmodo.json`.
 
 ## How stack links are resolved
 
@@ -49,9 +51,10 @@ For each stack, in order:
 docker compose up --build
 ```
 
-Reads the same `.env` file as `npm run dev` (docker-compose auto-loads `.env` from the project root).
-Serves the built client and the API from the same container on `PORT` (default `4000`). Admin settings
-persist as a JSON file in a named volume (`dashmodo-data`).
+Reads the same `.env` file as `npm run dev` (docker-compose auto-loads `.env` from the project root)
+for `ADMIN_SESSION_SECRET`. Serves the built client and the API from the same container on `PORT`
+(default `4000`). All other config — including Komodo connection details — persists as a JSON file
+in a named volume (`dashmodo-data`), set via the onboarding flow on first launch.
 
 ## Project layout
 

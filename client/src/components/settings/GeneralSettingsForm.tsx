@@ -1,16 +1,32 @@
-import { ActionIcon, ColorSwatch, Group, NumberInput, Select, Stack, Text, Textarea, TextInput, Tooltip } from '@mantine/core';
+import {
+	ActionIcon,
+	ColorSwatch,
+	Divider,
+	Group,
+	NumberInput,
+	PasswordInput,
+	Select,
+	Stack,
+	TagsInput,
+	Text,
+	Textarea,
+	TextInput,
+	Title,
+	Tooltip
+} from '@mantine/core';
 import { X } from 'lucide-react';
 import { THEME_COLORS } from '../../lib/themeColors';
-import type { AppSettings, ColorScheme, IconStyle } from '../../lib/types';
+import type { AppSettings, ColorScheme, ConnectionSettings, IconStyle } from '../../lib/types';
 import type { PendingAppChange } from '../../hooks/useSettings';
 
 interface Props {
 	settings: AppSettings;
+	connection?: ConnectionSettings;
 	pending: PendingAppChange;
 	onChange: (patch: PendingAppChange) => void;
 }
 
-export function GeneralSettingsForm({ settings, pending, onChange }: Props) {
+export function GeneralSettingsForm({ settings, connection, pending, onChange }: Props) {
 	const effective = { ...settings, ...pending };
 
 	return (
@@ -108,6 +124,55 @@ export function GeneralSettingsForm({ settings, pending, onChange }: Props) {
 				onChange={(e) => onChange({ customCss: e.currentTarget.value || null })}
 				styles={{ input: { fontFamily: 'var(--mantine-font-family-monospace)' } }}
 			/>
+
+			<Divider label="Connection" labelPosition="left" mt="sm" />
+
+			<TextInput
+				label="Komodo URL"
+				placeholder="http://192.168.1.2:9120"
+				value={effective.komodoUrl ?? ''}
+				onChange={(e) => onChange({ komodoUrl: e.currentTarget.value || null })}
+			/>
+
+			<PasswordInput
+				label="API key"
+				placeholder={connection?.komodoApiKeySet ? '•••••••• (unchanged)' : 'Not set'}
+				value={pending.komodoApiKey ?? ''}
+				onChange={(e) => onChange({ komodoApiKey: e.currentTarget.value })}
+			/>
+
+			<PasswordInput
+				label="API secret"
+				placeholder={connection?.komodoApiSecretSet ? '•••••••• (unchanged)' : 'Not set'}
+				value={pending.komodoApiSecret ?? ''}
+				onChange={(e) => onChange({ komodoApiSecret: e.currentTarget.value })}
+			/>
+
+			<PasswordInput
+				label="Admin password"
+				description="Protects this Settings panel. Leave blank to keep it unchanged."
+				placeholder={connection?.adminPasswordSet ? '•••••••• (unchanged)' : 'Not set — admin routes are open'}
+				value={pending.adminPassword ?? ''}
+				onChange={(e) => onChange({ adminPassword: e.currentTarget.value })}
+			/>
+
+			<div>
+				<Title order={6} fw={500} mb={4}>
+					Port denylist
+				</Title>
+				<Text size="xs" c="dimmed" mb={8}>
+					Extra ports to skip when deriving a stack link from its published container ports (e.g.
+					internal-only sidecar ports). Common non-web ports are always excluded.
+				</Text>
+				<TagsInput
+					placeholder="Add a port and press Enter"
+					value={(effective.portDenylist ?? []).map(String)}
+					onChange={(values) => {
+						const ports = values.map((v) => Number(v)).filter((n) => Number.isInteger(n) && n > 0);
+						onChange({ portDenylist: ports });
+					}}
+				/>
+			</div>
 		</Stack>
 	);
 }

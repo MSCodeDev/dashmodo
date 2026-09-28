@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { store } from '../db/store.js';
-import { cachedRead, normalizeKomodoError } from '../lib/komodo.js';
+import { cachedRead, normalizeKomodoError, testKomodoConnection } from '../lib/komodo.js';
 import { slugifyIconRef } from '../lib/icons.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
+import { hashPassword } from '../lib/auth.js';
 
 export const settingsRouter = Router();
 
@@ -102,15 +103,61 @@ const appSettingsUpdateSchema = z.object({
 	stacksColumns: z.number().int().min(1).max(6).optional(),
 	defaultIconStyle: z.enum(['default', 'light', 'dark']).optional(),
 	customCss: z.string().nullable().optional(),
-	themeColor: z.string().nullable().optional()
+	themeColor: z.string().nullable().optional(),
+	portDenylist: z.array(z.number().int()).optional(),
+	komodoUrl: z.string().url().optional(),
+	komodoApiKey: z.string().min(1).optional(),
+	komodoApiSecret: z.string().min(1).optional(),
+	adminPassword: z.string().min(1).optional()
 });
 
-settingsRouter.put('/app', (req, res) => {
+settingsRouter.put('/app', async (req, res) => {
 	const parsed = appSettingsUpdateSchema.safeParse(req.body);
 	if (!parsed.success) {
 		res.status(400).json({ error: 'Invalid request body', detail: parsed.error.flatten() });
 		return;
 	}
-	store.updateAppSettings(parsed.data);
+	const { adminPassword, komodoUrl, komodoApiKey, komodoApiSecret, ...rest } = parsed.data;
+
+	const current = store.getAppSettings();
+	const connectionChanged =
+		komodoUrl !== undefined || komodoApiKey !== undefined || komodoApiSecret !== undefined;
+	const nextKomodoUrl = komodoUrl ?? current.komodoUrl;
+	const nextKomodoApiKey = komodoApiKey ?? current.komodoApiKey;
+	const nextKomodoApiSecret = komodoApiSecret ?? current.komodoApiSecret;
+
+	if (connectionChanged) {
+		if (!nextKomodoUrl || !nextKomodoApiKey || !nextKomodoApiSecret) {
+			res.status(400).json({ error: 'Komodo URL, API key, and API secret are all required together' });
+			return;
+		}
+		try {
+			await testKomodoConnection(nextKomodoUrl, nextKomodoApiKey, nextKomodoApiSecret);
+		} catch {
+			res.status(400).json({ error: 'Could not connect to Komodo with the given URL/key/secret' });
+			return;
+		}
+	}
+
+	store.updateAppSettings({
+		...rest,
+		...(connectionChanged
+			? { komodoUrl: nextKomodoUrl, komodoApiKey: nextKomodoApiKey, komodoApiSecret: nextKomodoApiSecret }
+			: {}),
+		...(adminPassword ? { adminPasswordHash: hashPassword(adminPassword) } : {})
+	});
 	res.json({ ok: true });
+});
+
+// --- Connection status (non-secret) ---
+
+settingsRouter.get('/connection', (_req, res) => {
+	const s = store.getAppSettings();
+	res.json({
+		komodoUrl: s.komodoUrl,
+		komodoApiKeySet: Boolean(s.komodoApiKey),
+		komodoApiSecretSet: Boolean(s.komodoApiSecret),
+		adminPasswordSet: Boolean(s.adminPasswordHash),
+		portDenylist: s.portDenylist
+	});
 });
