@@ -1,7 +1,8 @@
-import { AppShell, Button, Group, Title, useComputedColorScheme } from '@mantine/core';
-import { ExternalLink, Settings as SettingsIcon } from 'lucide-react';
+import { AppShell, Box, Button, Group, Title, useComputedColorScheme } from '@mantine/core';
+import { Settings as SettingsIcon } from 'lucide-react';
 import { useConfig } from '../../hooks/useConfig';
 import { GLASS } from '../../lib/glass';
+import { selfhstIconUrl } from '../../lib/icons';
 import { Logo } from './Logo';
 
 export function TopNav({ onOpenSettings }: { onOpenSettings: () => void }) {
@@ -24,7 +25,7 @@ export function TopNav({ onOpenSettings }: { onOpenSettings: () => void }) {
 				<Group gap="xs">
 					<Logo color={config.data?.appSettings.themeColor ?? undefined} size={28} />
 					<Title order={3} fw={700}>
-						Dashmodo
+						{config.data?.appSettings.siteName || 'Dashmodo'}
 					</Title>
 				</Group>
 				<Group gap="sm">
@@ -36,9 +37,17 @@ export function TopNav({ onOpenSettings }: { onOpenSettings: () => void }) {
 							rel="noreferrer"
 							variant="default"
 							size="sm"
-							leftSection={<ExternalLink size={16} />}
+							leftSection={
+								<img
+									src={selfhstIconUrl('komodo', 'light')}
+									alt=""
+									width={16}
+									height={16}
+									style={{ borderRadius: 3 }}
+								/>
+							}
 						>
-							Komodo
+							<Box visibleFrom="sm">Komodo</Box>
 						</Button>
 					) : null}
 					<Button
@@ -47,7 +56,7 @@ export function TopNav({ onOpenSettings }: { onOpenSettings: () => void }) {
 						leftSection={<SettingsIcon size={16} />}
 						onClick={onOpenSettings}
 					>
-						Settings
+						<Box visibleFrom="sm">Settings</Box>
 					</Button>
 				</Group>
 			</Group>

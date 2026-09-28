@@ -9,3 +9,11 @@ body[data-mantine-color-scheme='dark'] {
 body[data-mantine-color-scheme='light'] {
 	background-color: #f8f9fa;
 }
+
+/* Nav buttons hide their text label below this width (see TopNav's visibleFrom="sm") — without
+   this, the icon keeps the margin meant to space it from that now-invisible text. */
+@media (max-width: 48em) {
+	.mantine-Button-section {
+		margin: 0 !important;
+	}
+}
