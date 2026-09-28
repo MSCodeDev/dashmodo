@@ -27,7 +27,6 @@ from the Settings panel.
 
 | Variable | Required | Description |
 |---|---|---|
-| `PORT` | no | Server port (default `4000`) |
 | `ADMIN_SESSION_SECRET` | no (required if an admin password is set) | Secret used to sign the admin session cookie — a deployment-level concern distinct from the admin password itself |
 
 Everything else — Komodo URL/API key/secret, admin password, and the extra port denylist for link
@@ -52,9 +51,10 @@ docker compose up --build
 ```
 
 Reads the same `.env` file as `npm run dev` (docker-compose auto-loads `.env` from the project root)
-for `ADMIN_SESSION_SECRET`. Serves the built client and the API from the same container on `PORT`
-(default `4000`). All other config — including Komodo connection details — persists as a JSON file
-in a named volume (`dashmodo-data`), set via the onboarding flow on first launch.
+for `ADMIN_SESSION_SECRET`. Serves the built client and the API from the same container on port
+`4000` (mapped in `docker-compose.yml`). All other config — including Komodo connection details —
+persists as a JSON file in a named volume (`dashmodo-data`), set via the onboarding flow on first
+launch.
 
 ## Project layout
 

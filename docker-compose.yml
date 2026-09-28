@@ -4,7 +4,6 @@ services:
     ports:
       - '4000:4000'
     environment:
-      PORT: 4000
       ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:-}
     volumes:
       - dashmodo-data:/app/data

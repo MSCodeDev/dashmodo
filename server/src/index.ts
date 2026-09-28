@@ -1,6 +1,7 @@
 import { app } from './app.js';
-import { env } from './env.js';
 
-app.listen(env.PORT, () => {
-	console.log(`Dashmodo server listening on :${env.PORT}`);
+const PORT = 4000;
+
+app.listen(PORT, () => {
+	console.log(`Dashmodo server listening on :${PORT}`);
 });

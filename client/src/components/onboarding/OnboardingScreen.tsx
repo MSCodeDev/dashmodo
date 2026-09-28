@@ -36,7 +36,7 @@ export function OnboardingScreen() {
 						<Stack>
 							<TextInput
 								label="Komodo URL"
-								placeholder="http://192.168.1.2:9120"
+								placeholder="http://localhost:9120"
 								value={komodoUrl}
 								onChange={(e) => setKomodoUrl(e.currentTarget.value)}
 								required

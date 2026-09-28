@@ -129,7 +129,7 @@ export function GeneralSettingsForm({ settings, connection, pending, onChange }:
 
 			<TextInput
 				label="Komodo URL"
-				placeholder="http://192.168.1.2:9120"
+				placeholder="http://localhost:9120"
 				value={effective.komodoUrl ?? ''}
 				onChange={(e) => onChange({ komodoUrl: e.currentTarget.value || null })}
 			/>

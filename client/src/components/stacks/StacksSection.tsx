@@ -2,14 +2,12 @@ import { Group, Loader, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { Layers } from 'lucide-react';
 import { useStacks } from '../../hooks/useStacks';
 import { useConfig } from '../../hooks/useConfig';
-import { useErrorToast } from '../../hooks/useErrorToast';
 import { StackCard } from './StackCard';
 import { ApiErrorAlert } from '../common/ApiErrorAlert';
 
 export function StacksSection() {
 	const { data, isLoading, isError, error } = useStacks();
 	const columns = useConfig().data?.appSettings.stacksColumns ?? 3;
-	useErrorToast(isError, error, 'Failed to load stacks');
 
 	return (
 		<Stack>
