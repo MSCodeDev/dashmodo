@@ -1,4 +1,4 @@
-# dashmodo
+# Dashmodo
 
 A companion homelab dashboard for [Komodo](https://komo.do). Lists servers and stacks with live status,
 CPU/memory/disk graphs, and one-click links to each stack's actual running service — resolved from
@@ -37,7 +37,7 @@ Open http://localhost:5173 — the Vite dev server proxies `/api` to the Express
 For each stack, in order:
 
 1. Komodo's own "quick links" configured on the stack (or falls through if none set).
-2. Derived from the stack's server — a link-host override set on dashmodo's own `/settings` page,
+2. Derived from the stack's server — a link-host override set on Dashmodo's own `/settings` page,
    falling back to Komodo's `external_address`, falling back to `address` — plus the lowest
    published container port that isn't in the deny-list.
 3. No link — the stack card renders without a click-through until Komodo has a quick-link or the

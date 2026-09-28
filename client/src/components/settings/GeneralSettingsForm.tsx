@@ -17,8 +17,8 @@ export function GeneralSettingsForm({ settings, pending, onChange }: Props) {
 		<Stack gap="md">
 			<TextInput
 				label="Site name"
-				description="Overrides the browser tab title. The header next to the logo always stays 'dashmodo'."
-				placeholder="dashmodo"
+				description="Overrides the browser tab title. The header next to the logo always stays 'Dashmodo'."
+				placeholder="Dashmodo"
 				value={effective.siteName ?? ''}
 				onChange={(e) => onChange({ siteName: e.currentTarget.value || null })}
 			/>

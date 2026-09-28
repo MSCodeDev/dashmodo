@@ -1,5 +1,5 @@
-// Minimal client-side mirror of the Komodo response shapes dashmodo's own /api/* routes
-// pass through (plus the `link` field dashmodo adds). Not the full komodo_client type surface —
+// Minimal client-side mirror of the Komodo response shapes Dashmodo's own /api/* routes
+// pass through (plus the `link` field Dashmodo adds). Not the full komodo_client type surface —
 // only what the UI actually reads. Keep in sync with server/src/routes/*.ts.
 
 export type ServerState = 'Ok' | 'NotOk' | 'Disabled';

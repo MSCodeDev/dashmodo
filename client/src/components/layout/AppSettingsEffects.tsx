@@ -11,7 +11,7 @@ export function AppSettingsEffects() {
 	const settings = config.data?.appSettings;
 
 	useEffect(() => {
-		document.title = settings?.siteName || 'dashmodo';
+		document.title = settings?.siteName || 'Dashmodo';
 	}, [settings?.siteName]);
 
 	useEffect(() => {

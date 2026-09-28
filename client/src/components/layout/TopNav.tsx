@@ -24,7 +24,7 @@ export function TopNav({ onOpenSettings }: { onOpenSettings: () => void }) {
 				<Group gap="xs">
 					<Logo color={config.data?.appSettings.themeColor ?? undefined} size={28} />
 					<Title order={3} fw={700}>
-						dashmodo
+						Dashmodo
 					</Title>
 				</Group>
 				<Group gap="sm">
