@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, Group, Loader, Modal, Stack, Tabs, Text } from '@mantine/core';
 import { useAdminLogout, useAdminSession } from '../../hooks/useAdmin';
 import { useConfig } from '../../hooks/useConfig';
+import { useErrorToast } from '../../hooks/useErrorToast';
 import {
 	useSaveAllSettings,
 	useSettingsServers,
@@ -23,6 +24,11 @@ export function SettingsModal({ opened, onClose }: { opened: boolean; onClose: (
 	const stacksQuery = useSettingsStacks();
 	const serversQuery = useSettingsServers();
 	const { save, isPending } = useSaveAllSettings();
+
+	useErrorToast(session.isError, session.error, 'Failed to check admin session');
+	useErrorToast(config.isError, config.error, 'Failed to load settings');
+	useErrorToast(stacksQuery.isError, stacksQuery.error, 'Failed to load stack settings');
+	useErrorToast(serversQuery.isError, serversQuery.error, 'Failed to load server settings');
 
 	const [pendingStacks, setPendingStacks] = useState<Record<string, PendingStackChange>>({});
 	const [pendingServers, setPendingServers] = useState<Record<string, PendingServerChange>>({});

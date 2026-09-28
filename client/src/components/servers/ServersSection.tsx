@@ -3,6 +3,7 @@ import { ActionIcon, Group, Loader, SimpleGrid, Stack, Text, Title } from '@mant
 import { ChevronDown, ChevronUp, Server } from 'lucide-react';
 import { useServers } from '../../hooks/useServers';
 import { useConfig } from '../../hooks/useConfig';
+import { useErrorToast } from '../../hooks/useErrorToast';
 import { ServerCard } from './ServerCard';
 import { ApiErrorAlert } from '../common/ApiErrorAlert';
 
@@ -10,6 +11,7 @@ export function ServersSection() {
 	const { data, isLoading, isError, error } = useServers();
 	const [expanded, setExpanded] = useState(false);
 	const columns = useConfig().data?.appSettings.serversColumns ?? 2;
+	useErrorToast(isError, error, 'Failed to load servers');
 
 	return (
 		<Stack>
