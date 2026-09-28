@@ -1,8 +1,8 @@
-import { Avatar, Group, Switch, Table, TextInput, Tooltip } from '@mantine/core';
-import { Info } from 'lucide-react';
-import { selfhstIconUrl } from '../../lib/icons';
+import { ActionIcon, Avatar, FileButton, Group, Switch, Table, TextInput, Tooltip } from '@mantine/core';
+import { Info, Upload } from 'lucide-react';
+import { resolveIconUrl } from '../../lib/icons';
+import { useUploadIcon, type PendingStackChange } from '../../hooks/useSettings';
 import type { IconStyle, StackSettingsRow } from '../../lib/types';
-import type { PendingStackChange } from '../../hooks/useSettings';
 
 interface Props {
 	rows: StackSettingsRow[];
@@ -12,6 +12,8 @@ interface Props {
 }
 
 export function StackSettingsTable({ rows, pending, onChange, iconStyle }: Props) {
+	const upload = useUploadIcon();
+
 	return (
 		<Table verticalSpacing="sm">
 			<Table.Thead>
@@ -22,9 +24,14 @@ export function StackSettingsTable({ rows, pending, onChange, iconStyle }: Props
 						<Group gap={4} wrap="nowrap">
 							Icon override
 							<Tooltip
-								label='selfh.st/icons reference, e.g. "jellyfin". Leave blank to use the auto-detected default shown as the placeholder.'
+								label={
+									'A reference or URL. Leave blank to use the auto-detected default (shown as the ' +
+									'placeholder). Sources: bare name or "sh:name" for selfh.st/icons (default), ' +
+									'"mdi:name" for Material Design Icons, "si:name" for Simple Icons, a direct ' +
+									'https:// URL, or upload a file with the button.'
+								}
 								multiline
-								w={260}
+								w={280}
 							>
 								<Info size={14} style={{ opacity: 0.6, cursor: 'help' }} />
 							</Tooltip>
@@ -40,7 +47,7 @@ export function StackSettingsTable({ rows, pending, onChange, iconStyle }: Props
 						<Table.Tr key={row.id}>
 							<Table.Td>
 								<Group gap="xs" wrap="nowrap">
-									<Avatar src={selfhstIconUrl(iconRef, iconStyle)} size="sm" radius="sm">
+									<Avatar src={resolveIconUrl(iconRef, iconStyle)} size="sm" radius="sm">
 										{row.name.slice(0, 2).toUpperCase()}
 									</Avatar>
 									{row.name}
@@ -53,13 +60,37 @@ export function StackSettingsTable({ rows, pending, onChange, iconStyle }: Props
 								/>
 							</Table.Td>
 							<Table.Td>
-								<TextInput
-									placeholder={row.defaultIcon}
-									value={effective.iconOverride ?? ''}
-									onChange={(e) => onChange(row.id, { iconOverride: e.currentTarget.value })}
-									size="xs"
-									w={200}
-								/>
+								<Group gap="xs" wrap="nowrap">
+									<TextInput
+										placeholder={row.defaultIcon}
+										value={effective.iconOverride ?? ''}
+										onChange={(e) => onChange(row.id, { iconOverride: e.currentTarget.value })}
+										size="xs"
+										w={200}
+									/>
+									<FileButton
+										accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+										onChange={(file) => {
+											if (!file) return;
+											upload.mutate(file, {
+												onSuccess: ({ ref }) => onChange(row.id, { iconOverride: ref })
+											});
+										}}
+									>
+										{(props) => (
+											<Tooltip label="Upload a custom icon">
+												<ActionIcon
+													{...props}
+													variant="default"
+													size="input-xs"
+													loading={upload.isPending}
+												>
+													<Upload size={14} />
+												</ActionIcon>
+											</Tooltip>
+										)}
+									</FileButton>
+								</Group>
 							</Table.Td>
 						</Table.Tr>
 					);

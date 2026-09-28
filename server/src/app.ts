@@ -6,8 +6,10 @@ import { serversRouter } from './routes/servers.js';
 import { stacksRouter } from './routes/stacks.js';
 import { adminRouter } from './routes/admin.js';
 import { settingsRouter } from './routes/settings.js';
+import { iconsRouter } from './routes/icons.js';
 import { env } from './env.js';
 import { store } from './db/store.js';
+import { ICONS_DIR } from './lib/iconStorage.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // server/src/app.ts (dev) or server/dist/app.js (prod) — either way, two levels up + client/dist.
@@ -31,7 +33,12 @@ app.get('/api/config', (_req, res) => {
 app.use('/api/servers', serversRouter);
 app.use('/api/stacks', stacksRouter);
 app.use('/api/admin', adminRouter);
+// More specific than /api/settings below, so must be registered first.
+app.use('/api/settings/icons', iconsRouter);
 app.use('/api/settings', settingsRouter);
+
+// Uploaded custom icons — public read (same trust level as the selfh.st CDN icons), admin-only write.
+app.use('/api/uploaded-icons', express.static(ICONS_DIR));
 
 // Unmatched /api/* requests get a JSON 404 instead of falling through to the SPA below.
 app.use('/api', (_req, res) => {

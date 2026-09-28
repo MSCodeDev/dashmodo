@@ -1,6 +1,6 @@
 import { Avatar, Card, Group, Stack, Text, useComputedColorScheme } from '@mantine/core';
 import { stackStateColor } from '../../lib/colors';
-import { selfhstIconUrl } from '../../lib/icons';
+import { resolveIconUrl } from '../../lib/icons';
 import { stackStateIcon } from '../../lib/statusIcons';
 import { GLASS } from '../../lib/glass';
 import { StatusIcon } from '../common/StatusIcon';
@@ -36,7 +36,7 @@ export function StackCard({ stack }: { stack: StackListItem }) {
 		>
 			<Group justify="space-between" align="flex-start" wrap="nowrap">
 				<Group wrap="nowrap" align="center" style={{ flex: 1, minWidth: 0 }}>
-					<Avatar src={selfhstIconUrl(stack.icon, iconStyle)} radius="sm" size="md">
+					<Avatar src={resolveIconUrl(stack.icon, iconStyle)} radius="sm" size="md">
 						{stack.name.slice(0, 2).toUpperCase()}
 					</Avatar>
 					<Stack gap={2} style={{ flex: 1, minWidth: 0 }}>

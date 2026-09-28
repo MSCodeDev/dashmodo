@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { toast } from '../lib/toast';
 import type { AppSettings, ServerSettingsRow, StackSettingsRow } from '../lib/types';
@@ -62,4 +62,16 @@ export function useSaveAllSettings() {
 	}
 
 	return { save, isPending };
+}
+
+/** Uploads a custom icon file, returning its `upload:<filename>` reference. */
+export function useUploadIcon() {
+	return useMutation({
+		mutationFn: (file: File) => {
+			const formData = new FormData();
+			formData.append('file', file);
+			return api.upload<{ ref: string }>('/settings/icons', formData);
+		},
+		onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to upload icon')
+	});
 }
