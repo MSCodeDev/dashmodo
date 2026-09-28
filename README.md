@@ -8,8 +8,26 @@ Komodo doesn't have one configured. Includes an admin page for hiding stacks and
 ## Deploy (Docker Compose)
 
 This is the intended way to run Dashmodo. Every push to `master` builds and publishes a new
-version to GHCR via `.github/workflows/docker-publish.yml` — `docker-compose.yml` already points
-at it, so no local build is needed:
+version to GHCR via `.github/workflows/docker-publish.yml`:
+
+`docker-compose.yml`:
+
+```yaml
+services:
+  dashmodo:
+    image: ghcr.io/mscodedev/dashmodo:latest
+    # Only used by `docker compose build` (e.g. testing a Dockerfile change) — `docker compose pull`
+    # / `up -d` use the published image above instead of building locally.
+    build: .
+    ports:
+      - '44000:44000'
+    volumes:
+      - dashmodo-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  dashmodo-data:
+```
 
 ```bash
 docker compose pull
@@ -21,12 +39,8 @@ an onboarding screen that collects the Komodo URL, API key/secret, and an option
 Everything (including the admin session secret) is generated/persisted, hashed as needed, to a
 JSON file in the `dashmodo-data` named volume, and is editable afterwards from the Settings panel.
 
-To build the image locally instead of pulling (e.g. testing a `Dockerfile` change):
-
-```bash
-docker compose build
-docker compose up -d
-```
+To build the image locally instead of pulling (e.g. testing a `Dockerfile` change), swap
+`docker compose pull` for `docker compose build`.
 
 GHCR packages are private by default. If `docker compose pull` gets a 401/403 on the homelab host,
 either make the package public (repo → Packages → dashmodo → Package settings) or
