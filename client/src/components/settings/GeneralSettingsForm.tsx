@@ -1,4 +1,15 @@
-import { ActionIcon, ColorSwatch, Group, NumberInput, Select, Stack, Text, Textarea, TextInput, Tooltip } from '@mantine/core';
+import {
+	ActionIcon,
+	ColorSwatch,
+	Group,
+	NumberInput,
+	Select,
+	Stack,
+	Text,
+	Textarea,
+	TextInput,
+	Tooltip
+} from '@mantine/core';
 import { X } from 'lucide-react';
 import { THEME_COLORS } from '../../lib/themeColors';
 import { FieldLabel } from '../common/FieldLabel';
@@ -76,7 +87,10 @@ export function GeneralSettingsForm({ settings, pending, onChange }: Props) {
 
 			<div>
 				<Text size="sm" fw={500} mb={8}>
-					<FieldLabel label="Theme color" tooltip="Colors the logo mark and a subtle background glow." />
+					<FieldLabel
+						label="Theme color"
+						tooltip="Colors the logo mark and a subtle background glow."
+					/>
 				</Text>
 				<Group gap="xs">
 					{THEME_COLORS.map((c) => (
@@ -95,7 +109,11 @@ export function GeneralSettingsForm({ settings, pending, onChange }: Props) {
 					))}
 					{effective.themeColor ? (
 						<Tooltip label="Clear">
-							<ActionIcon variant="subtle" color="gray" onClick={() => onChange({ themeColor: null })}>
+							<ActionIcon
+								variant="subtle"
+								color="gray"
+								onClick={() => onChange({ themeColor: null })}
+							>
 								<X size={16} />
 							</ActionIcon>
 						</Tooltip>

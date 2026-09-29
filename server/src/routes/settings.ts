@@ -64,7 +64,9 @@ const serverUpdateSchema = z.object({
 settingsRouter.get('/servers', async (_req, res) => {
 	try {
 		const servers = await cachedRead('ListServers', {});
-		const settingsById = new Map(store.listResourceSettings('server').map((r) => [r.resourceId, r]));
+		const settingsById = new Map(
+			store.listResourceSettings('server').map((r) => [r.resourceId, r])
+		);
 		const merged = servers.map((s) => ({
 			id: s.id,
 			name: s.name,
@@ -128,7 +130,9 @@ settingsRouter.put('/app', async (req, res) => {
 
 	if (connectionChanged) {
 		if (!nextKomodoUrl || !nextKomodoApiKey || !nextKomodoApiSecret) {
-			res.status(400).json({ error: 'Komodo URL, API key, and API secret are all required together' });
+			res
+				.status(400)
+				.json({ error: 'Komodo URL, API key, and API secret are all required together' });
 			return;
 		}
 		try {
@@ -142,7 +146,11 @@ settingsRouter.put('/app', async (req, res) => {
 	store.updateAppSettings({
 		...rest,
 		...(connectionChanged
-			? { komodoUrl: nextKomodoUrl, komodoApiKey: nextKomodoApiKey, komodoApiSecret: nextKomodoApiSecret }
+			? {
+					komodoUrl: nextKomodoUrl,
+					komodoApiKey: nextKomodoApiKey,
+					komodoApiSecret: nextKomodoApiSecret
+				}
 			: {}),
 		...(adminPassword ? { adminPasswordHash: hashPassword(adminPassword) } : {})
 	});

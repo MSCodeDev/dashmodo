@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { Alert, Button, Card, Center, PasswordInput, Stack, Text, TextInput, Title } from '@mantine/core';
+import {
+	Alert,
+	Button,
+	Card,
+	Center,
+	PasswordInput,
+	Stack,
+	Text,
+	TextInput,
+	Title
+} from '@mantine/core';
 import { Logo } from '../layout/Logo';
 import { FieldLabel } from '../common/FieldLabel';
 import { useOnboarding } from '../../hooks/useOnboarding';

@@ -76,7 +76,12 @@ const DEFAULT_APP_SETTINGS: AppSettingsData = {
 function load(): StoreData {
 	mkdirSync(dirname(DATA_FILE_PATH), { recursive: true });
 	if (!existsSync(DATA_FILE_PATH)) {
-		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS }, sessionSecret: '', setupToken: '' };
+		return {
+			resourceSettings: [],
+			appSettings: { ...DEFAULT_APP_SETTINGS },
+			sessionSecret: '',
+			setupToken: ''
+		};
 	}
 	try {
 		const raw = readFileSync(DATA_FILE_PATH, 'utf8');
@@ -89,7 +94,12 @@ function load(): StoreData {
 		};
 	} catch (err) {
 		console.error(`Failed to read/parse ${DATA_FILE_PATH}, starting with defaults:`, err);
-		return { resourceSettings: [], appSettings: { ...DEFAULT_APP_SETTINGS }, sessionSecret: '', setupToken: '' };
+		return {
+			resourceSettings: [],
+			appSettings: { ...DEFAULT_APP_SETTINGS },
+			sessionSecret: '',
+			setupToken: ''
+		};
 	}
 }
 
@@ -121,8 +131,13 @@ export const store = {
 		return data.resourceSettings.filter((r) => r.resourceType === resourceType);
 	},
 
-	getResourceSettings(resourceType: ResourceType, resourceId: string): ResourceSettingsRow | undefined {
-		return data.resourceSettings.find((r) => r.resourceType === resourceType && r.resourceId === resourceId);
+	getResourceSettings(
+		resourceType: ResourceType,
+		resourceId: string
+	): ResourceSettingsRow | undefined {
+		return data.resourceSettings.find(
+			(r) => r.resourceType === resourceType && r.resourceId === resourceId
+		);
 	},
 
 	upsertResourceSettings(

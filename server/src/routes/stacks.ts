@@ -43,8 +43,12 @@ stacksRouter.get('/', async (_req, res) => {
 			cachedRead('ListServers', {})
 		]);
 		const serverInfoById = new Map(servers.map((s) => [s.id, s.info]));
-		const stackSettings = new Map(store.listResourceSettings('stack').map((r) => [r.resourceId, r]));
-		const serverSettings = new Map(store.listResourceSettings('server').map((r) => [r.resourceId, r]));
+		const stackSettings = new Map(
+			store.listResourceSettings('stack').map((r) => [r.resourceId, r])
+		);
+		const serverSettings = new Map(
+			store.listResourceSettings('server').map((r) => [r.resourceId, r])
+		);
 		const visible = stacks.filter((s) => !stackSettings.get(s.id)?.hidden);
 
 		const enriched = await Promise.all(
@@ -82,7 +86,10 @@ stacksRouter.get('/:id', async (req, res) => {
 			} catch {
 				// server unreachable/deleted — link derivation just falls through to "none"
 			}
-			serverLinkOverride = store.getResourceSettings('server', stack.config.server_id)?.linkOverride;
+			serverLinkOverride = store.getResourceSettings(
+				'server',
+				stack.config.server_id
+			)?.linkOverride;
 		}
 
 		const link = resolveStackLink({

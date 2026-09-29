@@ -32,7 +32,11 @@ export function SettingsModal({ opened, onClose }: { opened: boolean; onClose: (
 	useErrorToast(config.isError, config.error, 'Failed to load settings');
 	useErrorToast(stacksQuery.isError, stacksQuery.error, 'Failed to load stack settings');
 	useErrorToast(serversQuery.isError, serversQuery.error, 'Failed to load server settings');
-	useErrorToast(connectionQuery.isError, connectionQuery.error, 'Failed to load connection settings');
+	useErrorToast(
+		connectionQuery.isError,
+		connectionQuery.error,
+		'Failed to load connection settings'
+	);
 
 	const [pendingStacks, setPendingStacks] = useState<Record<string, PendingStackChange>>({});
 	const [pendingServers, setPendingServers] = useState<Record<string, PendingServerChange>>({});

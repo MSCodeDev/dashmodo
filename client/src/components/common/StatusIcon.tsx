@@ -11,7 +11,11 @@ interface StatusIconProps {
 export function StatusIcon({ icon: IconComponent, color, label, size = 20 }: StatusIconProps) {
 	return (
 		<Tooltip label={label} withArrow>
-			<IconComponent size={size} color={`var(--mantine-color-${color}-6)`} style={{ display: 'block' }} />
+			<IconComponent
+				size={size}
+				color={`var(--mantine-color-${color}-6)`}
+				style={{ display: 'block' }}
+			/>
 		</Tooltip>
 	);
 }

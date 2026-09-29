@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { toast } from '../lib/toast';
-import type { AppSettings, ConnectionSettings, ServerSettingsRow, StackSettingsRow } from '../lib/types';
+import type {
+	AppSettings,
+	ConnectionSettings,
+	ServerSettingsRow,
+	StackSettingsRow
+} from '../lib/types';
 
 export function useConnectionSettings() {
 	return useQuery({
@@ -53,8 +58,12 @@ export function useSaveAllSettings() {
 		setIsPending(true);
 		try {
 			await Promise.all([
-				...Object.entries(pendingStacks).map(([id, patch]) => api.put(`/settings/stacks/${id}`, patch)),
-				...Object.entries(pendingServers).map(([id, patch]) => api.put(`/settings/servers/${id}`, patch)),
+				...Object.entries(pendingStacks).map(([id, patch]) =>
+					api.put(`/settings/stacks/${id}`, patch)
+				),
+				...Object.entries(pendingServers).map(([id, patch]) =>
+					api.put(`/settings/servers/${id}`, patch)
+				),
 				...(Object.keys(pendingApp).length > 0 ? [api.put('/settings/app', pendingApp)] : [])
 			]);
 			qc.invalidateQueries({ queryKey: ['settings-stacks'] });

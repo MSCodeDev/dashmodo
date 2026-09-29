@@ -1,4 +1,13 @@
-import { ActionIcon, Avatar, FileButton, Group, Switch, Table, TextInput, Tooltip } from '@mantine/core';
+import {
+	ActionIcon,
+	Avatar,
+	FileButton,
+	Group,
+	Switch,
+	Table,
+	TextInput,
+	Tooltip
+} from '@mantine/core';
 import { Info, Upload } from 'lucide-react';
 import { resolveIconUrl } from '../../lib/icons';
 import { useUploadIcon, type PendingStackChange } from '../../hooks/useSettings';

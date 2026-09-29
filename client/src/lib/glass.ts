@@ -5,6 +5,9 @@ export const GLASS = {
 	},
 	header: {
 		dark: { backgroundColor: 'rgba(27, 29, 36, 0.7)', borderColor: 'var(--mantine-color-dark-4)' },
-		light: { backgroundColor: 'rgba(255, 255, 255, 0.75)', borderColor: 'var(--mantine-color-gray-3)' }
+		light: {
+			backgroundColor: 'rgba(255, 255, 255, 0.75)',
+			borderColor: 'var(--mantine-color-gray-3)'
+		}
 	}
 } as const;

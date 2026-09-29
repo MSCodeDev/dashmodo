@@ -1,4 +1,12 @@
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+	Area,
+	AreaChart,
+	CartesianGrid,
+	ResponsiveContainer,
+	Tooltip,
+	XAxis,
+	YAxis
+} from 'recharts';
 import type { SystemStatsRecord } from '../../lib/types';
 
 function formatTime(ts: number) {
@@ -6,13 +14,11 @@ function formatTime(ts: number) {
 }
 
 export function HistoricalChart({ records }: { records: SystemStatsRecord[] }) {
-	const data = [...records]
-		.reverse()
-		.map((r) => ({
-			ts: r.ts,
-			cpu: r.cpu_perc,
-			mem: r.mem_total_gb > 0 ? (r.mem_used_gb / r.mem_total_gb) * 100 : 0
-		}));
+	const data = [...records].reverse().map((r) => ({
+		ts: r.ts,
+		cpu: r.cpu_perc,
+		mem: r.mem_total_gb > 0 ? (r.mem_used_gb / r.mem_total_gb) * 100 : 0
+	}));
 
 	if (data.length === 0) {
 		return null;

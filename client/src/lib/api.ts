@@ -32,9 +32,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
 	get: <T>(path: string) => request<T>(path),
-	put: <T>(path: string, body: unknown) => request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+	put: <T>(path: string, body: unknown) =>
+		request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
 	post: <T>(path: string, body?: unknown) =>
-		request<T>(path, { method: 'POST', body: body !== undefined ? JSON.stringify(body) : undefined }),
+		request<T>(path, {
+			method: 'POST',
+			body: body !== undefined ? JSON.stringify(body) : undefined
+		}),
 	// No content-type header here — the browser sets its own multipart boundary for FormData.
 	async upload<T>(path: string, formData: FormData): Promise<T> {
 		const res = await fetch(`${BASE}${path}`, {
