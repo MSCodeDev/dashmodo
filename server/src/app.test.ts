@@ -153,4 +153,84 @@ describe('with an admin password set', () => {
 			expect(((await res.json()) as { ref: string }).ref).toMatch(/^upload:[0-9a-f-]{36}\.png$/);
 		});
 	});
+
+	describe('custom logo and favicon', () => {
+		async function uploadPng() {
+			const form = new FormData();
+			form.append('file', new Blob(['png-bytes'], { type: 'image/png' }), 'logo.png');
+			const res = await fetch(`${base}/api/settings/icons`, {
+				method: 'POST',
+				body: form,
+				headers: authed()
+			});
+			return ((await res.json()) as { ref: string }).ref;
+		}
+		const putApp = (body: unknown) =>
+			fetch(`${base}/api/settings/app`, {
+				method: 'PUT',
+				headers: { 'content-type': 'application/json', ...authed() },
+				body: JSON.stringify(body)
+			});
+		const fileStatus = async (ref: string) =>
+			(await fetch(`${base}/api/uploaded-icons/${ref.slice('upload:'.length)}`)).status;
+		const configLogo = async () =>
+			(
+				(await (await fetch(`${base}/api/config`)).json()) as {
+					appSettings: { logoRef: string | null };
+				}
+			).appSettings.logoRef;
+
+		it('defaults to the built-in logo', async () => {
+			expect(await configLogo()).toBeNull();
+		});
+
+		it.each([
+			'https://evil.example/logo.png',
+			'mdi:home',
+			'upload:../../etc/passwd',
+			'upload:abc.png',
+			'upload:00000000-0000-0000-0000-000000000000.svg'
+		])('rejects %j as a logo reference', async (ref) => {
+			expect((await putApp({ logoRef: ref })).status).toBe(400);
+		});
+
+		it('rejects a well-formed reference to a file that was never uploaded', async () => {
+			const res = await putApp({ logoRef: 'upload:00000000-0000-4000-8000-000000000000.png' });
+			expect(res.status).toBe(400);
+			expect(await configLogo()).toBeNull();
+		});
+
+		it('serves an uploaded logo publicly and exposes it in the public config', async () => {
+			const ref = await uploadPng();
+			expect((await putApp({ logoRef: ref })).status).toBe(200);
+			expect(await configLogo()).toBe(ref);
+			expect(await fileStatus(ref)).toBe(200);
+			await putApp({ logoRef: null });
+		});
+
+		it('deletes the old file when the logo is replaced or reset', async () => {
+			const first = await uploadPng();
+			const second = await uploadPng();
+			await putApp({ logoRef: first });
+			await putApp({ logoRef: second });
+			expect(await fileStatus(first)).toBe(404);
+			expect(await fileStatus(second)).toBe(200);
+
+			await putApp({ logoRef: null });
+			expect(await fileStatus(second)).toBe(404);
+			expect(await configLogo()).toBeNull();
+		});
+
+		it('keeps the file if a stack icon override still points at it', async () => {
+			const ref = await uploadPng();
+			await putApp({ logoRef: ref });
+			await fetch(`${base}/api/settings/stacks/s1`, {
+				method: 'PUT',
+				headers: { 'content-type': 'application/json', ...authed() },
+				body: JSON.stringify({ iconOverride: ref })
+			});
+			await putApp({ logoRef: null });
+			expect(await fileStatus(ref)).toBe(200);
+		});
+	});
 });

@@ -1,12 +1,19 @@
 import { Router } from 'express';
+import { store } from '../db/store.js';
 import { cachedRead, normalizeKomodoError, Types } from '../lib/komodo.js';
+import { sortByOrder } from '../lib/sort.js';
 
 export const serversRouter = Router();
 
 serversRouter.get('/', async (_req, res) => {
 	try {
 		const servers = await cachedRead('ListServers', {});
-		res.json(servers);
+		const settingsById = new Map(
+			store.listResourceSettings('server').map((r) => [r.resourceId, r])
+		);
+		res.json(
+			sortByOrder(servers, { name: (s) => s.name, order: (s) => settingsById.get(s.id)?.sortOrder })
+		);
 	} catch (err) {
 		const e = normalizeKomodoError(err);
 		res.status(e.status).json({ error: e.message });

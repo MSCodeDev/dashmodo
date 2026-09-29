@@ -18,6 +18,8 @@ export interface ResourceSettingsRow {
 	hidden: boolean;
 	linkOverride: string | null;
 	iconOverride: string | null;
+	/** Position set by dragging in Settings. null = default alphabetical. */
+	sortOrder: number | null;
 	updatedAt: string;
 }
 
@@ -29,6 +31,8 @@ export interface AppSettingsData {
 	defaultIconStyle: IconStyle;
 	customCss: string | null;
 	themeColor: string | null;
+	/** Custom logo + favicon (one file), as an `upload:<file>` reference. null = built-in logo. */
+	logoRef: string | null;
 	/** Extra ports to skip when deriving a stack link, merged with links.ts's built-in defaults. */
 	portDenylist: number[];
 	// Set via onboarding on first run, editable later in Settings. Not in env anymore.
@@ -65,6 +69,7 @@ const DEFAULT_APP_SETTINGS: AppSettingsData = {
 	defaultIconStyle: 'default',
 	customCss: null,
 	themeColor: null,
+	logoRef: null,
 	portDenylist: [],
 	komodoUrl: null,
 	komodoApiKey: null,
@@ -87,7 +92,11 @@ function load(): StoreData {
 		const raw = readFileSync(DATA_FILE_PATH, 'utf8');
 		const parsed = JSON.parse(raw) as Partial<StoreData>;
 		return {
-			resourceSettings: parsed.resourceSettings ?? [],
+			// Rows saved before `sortOrder` existed won't have it.
+			resourceSettings: (parsed.resourceSettings ?? []).map((r) => ({
+				...r,
+				sortOrder: r.sortOrder ?? null
+			})),
 			appSettings: { ...DEFAULT_APP_SETTINGS, ...parsed.appSettings },
 			sessionSecret: parsed.sessionSecret ?? '',
 			setupToken: parsed.setupToken ?? ''
@@ -143,7 +152,9 @@ export const store = {
 	upsertResourceSettings(
 		resourceType: ResourceType,
 		resourceId: string,
-		patch: Partial<Pick<ResourceSettingsRow, 'hidden' | 'linkOverride' | 'iconOverride'>>
+		patch: Partial<
+			Pick<ResourceSettingsRow, 'hidden' | 'linkOverride' | 'iconOverride' | 'sortOrder'>
+		>
 	): void {
 		const existing = data.resourceSettings.find(
 			(r) => r.resourceType === resourceType && r.resourceId === resourceId
@@ -157,6 +168,7 @@ export const store = {
 				hidden: false,
 				linkOverride: null,
 				iconOverride: null,
+				sortOrder: null,
 				...patch,
 				updatedAt: new Date().toISOString()
 			});

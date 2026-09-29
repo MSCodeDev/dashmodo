@@ -5,6 +5,8 @@ import { cachedRead, normalizeKomodoError, testKomodoConnection } from '../lib/k
 import { slugifyIconRef } from '../lib/icons.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 import { hashPassword } from '../lib/auth.js';
+import { sortByOrder } from '../lib/sort.js';
+import { deleteUploadedIcon, isUploadRef, uploadedIconExists } from '../lib/iconStorage.js';
 
 export const settingsRouter = Router();
 
@@ -18,7 +20,8 @@ function normalize(value: string | null | undefined) {
 
 const stackUpdateSchema = z.object({
 	hidden: z.boolean().optional(),
-	iconOverride: z.string().nullable().optional()
+	iconOverride: z.string().nullable().optional(),
+	sortOrder: z.number().int().min(0).nullable().optional()
 });
 
 settingsRouter.get('/stacks', async (_req, res) => {
@@ -31,9 +34,10 @@ settingsRouter.get('/stacks', async (_req, res) => {
 			state: s.info.state,
 			hidden: settingsById.get(s.id)?.hidden ?? false,
 			iconOverride: settingsById.get(s.id)?.iconOverride ?? null,
+			sortOrder: settingsById.get(s.id)?.sortOrder ?? null,
 			defaultIcon: slugifyIconRef(s.name)
 		}));
-		res.json(merged);
+		res.json(sortByOrder(merged, { name: (s) => s.name, order: (s) => s.sortOrder }));
 	} catch (err) {
 		const e = normalizeKomodoError(err);
 		res.status(e.status).json({ error: e.message });
@@ -46,11 +50,12 @@ settingsRouter.put('/stacks/:id', (req, res) => {
 		res.status(400).json({ error: 'Invalid request body', detail: parsed.error.flatten() });
 		return;
 	}
-	const { hidden } = parsed.data;
+	const { hidden, sortOrder } = parsed.data;
 	const iconOverride = normalize(parsed.data.iconOverride);
 	store.upsertResourceSettings('stack', req.params.id, {
 		...(hidden !== undefined ? { hidden } : {}),
-		...(iconOverride !== undefined ? { iconOverride } : {})
+		...(iconOverride !== undefined ? { iconOverride } : {}),
+		...(sortOrder !== undefined ? { sortOrder } : {})
 	});
 	res.json({ ok: true });
 });
@@ -58,7 +63,8 @@ settingsRouter.put('/stacks/:id', (req, res) => {
 // --- Servers ---
 
 const serverUpdateSchema = z.object({
-	linkOverride: z.string().nullable().optional()
+	linkOverride: z.string().nullable().optional(),
+	sortOrder: z.number().int().min(0).nullable().optional()
 });
 
 settingsRouter.get('/servers', async (_req, res) => {
@@ -74,9 +80,10 @@ settingsRouter.get('/servers', async (_req, res) => {
 			// What link derivation currently sees, before any admin override — helps explain why
 			// an override might be needed (e.g. shows an internal-only Periphery address).
 			detectedAddress: s.info.external_address || s.info.address || null,
-			linkOverride: settingsById.get(s.id)?.linkOverride ?? null
+			linkOverride: settingsById.get(s.id)?.linkOverride ?? null,
+			sortOrder: settingsById.get(s.id)?.sortOrder ?? null
 		}));
-		res.json(merged);
+		res.json(sortByOrder(merged, { name: (s) => s.name, order: (s) => s.sortOrder }));
 	} catch (err) {
 		const e = normalizeKomodoError(err);
 		res.status(e.status).json({ error: e.message });
@@ -89,9 +96,11 @@ settingsRouter.put('/servers/:id', (req, res) => {
 		res.status(400).json({ error: 'Invalid request body', detail: parsed.error.flatten() });
 		return;
 	}
+	const { sortOrder } = parsed.data;
 	const linkOverride = normalize(parsed.data.linkOverride);
 	store.upsertResourceSettings('server', req.params.id, {
-		...(linkOverride !== undefined ? { linkOverride } : {})
+		...(linkOverride !== undefined ? { linkOverride } : {}),
+		...(sortOrder !== undefined ? { sortOrder } : {})
 	});
 	res.json({ ok: true });
 });
@@ -106,6 +115,7 @@ const appSettingsUpdateSchema = z.object({
 	defaultIconStyle: z.enum(['default', 'light', 'dark']).optional(),
 	customCss: z.string().nullable().optional(),
 	themeColor: z.string().nullable().optional(),
+	logoRef: z.string().refine(isUploadRef, 'Not an uploaded image reference').nullable().optional(),
 	portDenylist: z.array(z.number().int()).optional(),
 	komodoUrl: z.string().url().optional(),
 	komodoApiKey: z.string().min(1).optional(),
@@ -143,6 +153,11 @@ settingsRouter.put('/app', async (req, res) => {
 		}
 	}
 
+	if (typeof rest.logoRef === 'string' && !uploadedIconExists(rest.logoRef)) {
+		res.status(400).json({ error: 'Uploaded logo file not found — upload it again' });
+		return;
+	}
+
 	store.updateAppSettings({
 		...rest,
 		...(connectionChanged
@@ -154,6 +169,14 @@ settingsRouter.put('/app', async (req, res) => {
 			: {}),
 		...(adminPassword ? { adminPasswordHash: hashPassword(adminPassword) } : {})
 	});
+
+	// A replaced/removed logo would otherwise stay publicly fetchable at its old URL forever.
+	if (rest.logoRef !== undefined && current.logoRef && current.logoRef !== rest.logoRef) {
+		const stillUsed = (['stack', 'server'] as const).some((type) =>
+			store.listResourceSettings(type).some((r) => r.iconOverride === current.logoRef)
+		);
+		if (!stillUsed) deleteUploadedIcon(current.logoRef);
+	}
 	res.json({ ok: true });
 });
 

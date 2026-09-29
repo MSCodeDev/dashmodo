@@ -93,6 +93,18 @@ publish workflow won't run unless it passes on `master`.
 Server tests run from a throwaway temp directory (`server/vitest.setup.ts`), so they can never
 read or write your real `server/data/dashmodo.json`.
 
+## Customizing
+
+From the Settings panel (admin only):
+
+- **Order** — servers and stacks are sorted A–Z by default. In the Servers/Stacks tabs, drag the
+  handles to set your own order (it applies to the dashboard too); "Sort A–Z" goes back to the
+  default. Anything you haven't ordered, like a stack newly added in Komodo, lands alphabetically
+  after the ones you have.
+- **Logo & favicon** — General tab. One image is used for both the header logo and the browser tab
+  icon. A square PNG, JPEG, WebP or GIF up to 2 MB works best; SVG isn't accepted (see
+  `AGENTS.md` for why). "Reset to default" restores the built-in logo.
+
 ## How stack links are resolved
 
 For each stack, in order:

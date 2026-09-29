@@ -25,16 +25,24 @@ export default function App() {
 	}
 
 	if (config.data?.needsOnboarding) {
-		return <OnboardingScreen />;
+		return (
+			<>
+				<AppSettingsEffects />
+				<OnboardingScreen />
+			</>
+		);
 	}
 
 	// Password gates the whole interface, not just Settings — a set-but-unauthenticated session
 	// blocks the dashboard itself here, same as it blocks the admin API routes server-side.
 	if (session.data && !session.data.authenticated) {
 		return (
-			<Center mih="100vh" p="md">
-				<LoginForm />
-			</Center>
+			<>
+				<AppSettingsEffects />
+				<Center mih="100vh" p="md">
+					<LoginForm />
+				</Center>
+			</>
 		);
 	}
 

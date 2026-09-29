@@ -1,6 +1,8 @@
 import {
 	ActionIcon,
+	Button,
 	ColorSwatch,
+	FileButton,
 	Group,
 	NumberInput,
 	Select,
@@ -10,7 +12,9 @@ import {
 	TextInput,
 	Tooltip
 } from '@mantine/core';
-import { X } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
+import { Logo } from '../layout/Logo';
+import { useUploadIcon } from '../../hooks/useSettings';
 import { THEME_COLORS } from '../../lib/themeColors';
 import { FieldLabel } from '../common/FieldLabel';
 import type { AppSettings, ColorScheme, IconStyle } from '../../lib/types';
@@ -24,6 +28,7 @@ interface Props {
 
 export function GeneralSettingsForm({ settings, pending, onChange }: Props) {
 	const effective = { ...settings, ...pending };
+	const upload = useUploadIcon();
 
 	return (
 		<Stack gap="md">
@@ -84,6 +89,47 @@ export function GeneralSettingsForm({ settings, pending, onChange }: Props) {
 				onChange={(v) => v && onChange({ defaultIconStyle: v as IconStyle })}
 				allowDeselect={false}
 			/>
+
+			<div>
+				<Text size="sm" fw={500} mb={8}>
+					<FieldLabel
+						label="Logo & favicon"
+						tooltip="One image used for both the header logo and the browser tab icon. A square PNG, JPEG, WebP or GIF up to 2 MB works best (SVG isn't supported). Leave it unset to use the built-in logo."
+					/>
+				</Text>
+				<Group gap="md">
+					<Logo size={40} logoRef={effective.logoRef} color={effective.themeColor ?? undefined} />
+					<FileButton
+						accept="image/png,image/jpeg,image/webp,image/gif"
+						onChange={(file) => {
+							if (!file) return;
+							upload.mutate(file, { onSuccess: ({ ref }) => onChange({ logoRef: ref }) });
+						}}
+					>
+						{(props) => (
+							<Button
+								{...props}
+								variant="default"
+								size="xs"
+								leftSection={<Upload size={14} />}
+								loading={upload.isPending}
+							>
+								Upload
+							</Button>
+						)}
+					</FileButton>
+					{effective.logoRef ? (
+						<Button
+							variant="subtle"
+							color="gray"
+							size="xs"
+							onClick={() => onChange({ logoRef: null })}
+						>
+							Reset to default
+						</Button>
+					) : null}
+				</Group>
+			</div>
 
 			<div>
 				<Text size="sm" fw={500} mb={8}>

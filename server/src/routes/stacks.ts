@@ -3,6 +3,7 @@ import { store } from '../db/store.js';
 import { cachedRead, normalizeKomodoError } from '../lib/komodo.js';
 import { resolveStackLink, type ResolvedLink } from '../lib/links.js';
 import { slugifyIconRef } from '../lib/icons.js';
+import { sortByOrder } from '../lib/sort.js';
 
 export const stacksRouter = Router();
 
@@ -62,7 +63,12 @@ stacksRouter.get('/', async (_req, res) => {
 			})
 		);
 
-		res.json(enriched);
+		res.json(
+			sortByOrder(enriched, {
+				name: (s) => s.name,
+				order: (s) => stackSettings.get(s.id)?.sortOrder
+			})
+		);
 	} catch (err) {
 		const e = normalizeKomodoError(err);
 		res.status(e.status).json({ error: e.message });

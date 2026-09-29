@@ -93,6 +93,8 @@ export interface AppSettings {
 	defaultIconStyle: IconStyle;
 	customCss: string | null;
 	themeColor: string | null;
+	/** Custom logo + favicon as an `upload:<file>` reference; null = the built-in logo. */
+	logoRef: string | null;
 	portDenylist: number[];
 	komodoUrl: string | null;
 }
@@ -118,6 +120,8 @@ export interface StackSettingsRow {
 	state: StackState;
 	hidden: boolean;
 	iconOverride: string | null;
+	/** Manual position from dragging; null = default alphabetical. */
+	sortOrder: number | null;
 	defaultIcon: string;
 }
 
@@ -127,4 +131,5 @@ export interface ServerSettingsRow {
 	state: ServerState;
 	detectedAddress: string | null;
 	linkOverride: string | null;
+	sortOrder: number | null;
 }

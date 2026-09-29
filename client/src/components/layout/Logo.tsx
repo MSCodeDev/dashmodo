@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useConfig } from '../../hooks/useConfig';
+import { resolveIconUrl } from '../../lib/icons';
 
 const DEFAULT_FILL = '#456959';
 
@@ -16,12 +18,33 @@ function loadLogoSvg(): Promise<string> {
 	return fetchPromise;
 }
 
-export function Logo({ color, size = 28 }: { color?: string; size?: number }) {
+interface LogoProps {
+	color?: string;
+	size?: number;
+	/** Overrides the saved custom logo (e.g. to preview an unsaved change); null = the built-in one. */
+	logoRef?: string | null;
+}
+
+export function Logo({ color, size = 28, logoRef }: LogoProps) {
+	const configuredRef = useConfig().data?.appSettings.logoRef;
+	const customRef = logoRef !== undefined ? logoRef : configuredRef;
 	const [svg, setSvg] = useState(cachedSvg);
 
 	useEffect(() => {
-		if (!svg) loadLogoSvg().then(setSvg);
-	}, [svg]);
+		if (!customRef && !svg) loadLogoSvg().then(setSvg);
+	}, [customRef, svg]);
+
+	if (customRef) {
+		return (
+			<img
+				src={resolveIconUrl(customRef)}
+				alt=""
+				width={size}
+				height={size}
+				style={{ width: size, height: size, flexShrink: 0, objectFit: 'contain' }}
+			/>
+		);
+	}
 
 	if (!svg) return <div style={{ width: size, height: size, flexShrink: 0 }} />;
 

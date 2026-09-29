@@ -33,10 +33,12 @@ export function useSettingsServers() {
 export interface PendingStackChange {
 	hidden?: boolean;
 	iconOverride?: string | null;
+	sortOrder?: number | null;
 }
 
 export interface PendingServerChange {
 	linkOverride?: string | null;
+	sortOrder?: number | null;
 }
 
 export type PendingAppChange = Partial<AppSettings> & {
