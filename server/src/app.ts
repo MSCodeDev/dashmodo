@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import express from 'express';
+import express, { type RequestHandler } from 'express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { serversRouter } from './routes/servers.js';
@@ -39,14 +39,34 @@ app.use(
 				objectSrc: ["'none'"],
 				baseUri: ["'self'"],
 				formAction: ["'self'"],
-				frameAncestors: ["'none'"]
+				frameAncestors: ["'none'"],
+				// Helmet's default. On a plain-HTTP, non-localhost origin (the common LAN setup) the
+				// browser rewrites the page's own CSS/JS/favicon requests to https://, which nothing
+				// is listening for — the app loads blank. Not worth it: mixed content is already
+				// blocked by browsers when the page itself is served over HTTPS.
+				upgradeInsecureRequests: null
 			}
 		},
 		// Disabled: default (require-corp) would block the selfh.st icon CDN's <img> responses,
 		// which don't send a matching Cross-Origin-Resource-Policy header.
 		crossOriginEmbedderPolicy: false,
-		frameguard: { action: 'deny' }
+		frameguard: { action: 'deny' },
+		// These three only mean anything over HTTPS; browsers ignore them (with a console warning)
+		// on plain HTTP, so they're sent only for secure requests, below.
+		strictTransportSecurity: false,
+		crossOriginOpenerPolicy: false,
+		originAgentCluster: false
 	})
+);
+
+const onlyWhenSecure =
+	(middleware: RequestHandler): RequestHandler =>
+	(req, res, next) =>
+		req.secure ? middleware(req, res, next) : next();
+app.use(
+	onlyWhenSecure(helmet.strictTransportSecurity()),
+	onlyWhenSecure(helmet.crossOriginOpenerPolicy()),
+	onlyWhenSecure(helmet.originAgentCluster())
 );
 
 app.use(express.json());

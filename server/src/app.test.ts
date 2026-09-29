@@ -38,6 +38,29 @@ describe('security headers', () => {
 	});
 });
 
+describe('plain HTTP on a LAN address (the common self-hosted setup)', () => {
+	// Regression: helmet's default `upgrade-insecure-requests` made browsers rewrite the page's own
+	// CSS/JS/favicon to https:// on e.g. http://192.168.1.2, which nothing serves — a blank page.
+	it('does not tell browsers to upgrade sub-resources to HTTPS', async () => {
+		const csp = (await fetch(`${base}/api/health`)).headers.get('content-security-policy') ?? '';
+		expect(csp).not.toContain('upgrade-insecure-requests');
+	});
+
+	it('omits the HTTPS-only headers browsers would warn about', async () => {
+		const res = await fetch(`${base}/api/health`);
+		expect(res.headers.get('strict-transport-security')).toBeNull();
+		expect(res.headers.get('cross-origin-opener-policy')).toBeNull();
+		expect(res.headers.get('origin-agent-cluster')).toBeNull();
+	});
+
+	it('still sends them when a TLS-terminating proxy says the request was HTTPS', async () => {
+		const res = await fetch(`${base}/api/health`, { headers: { 'x-forwarded-proto': 'https' } });
+		expect(res.headers.get('strict-transport-security')).toContain('max-age=');
+		expect(res.headers.get('cross-origin-opener-policy')).toBe('same-origin');
+		expect(res.headers.get('origin-agent-cluster')).toBe('?1');
+	});
+});
+
 describe('with no admin password set (open by design on a trusted LAN)', () => {
 	it('serves admin routes without a session', async () => {
 		expect((await fetch(`${base}/api/settings/connection`)).status).toBe(200);
