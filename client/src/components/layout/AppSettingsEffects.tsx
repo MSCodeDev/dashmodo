@@ -8,20 +8,22 @@ const CUSTOM_CSS_ID = 'dashmodo-custom-css';
 export function AppSettingsEffects() {
 	const config = useConfig();
 	const { setColorScheme } = useMantineColorScheme();
-	const settings = config.data?.appSettings;
+	const siteName = config.data?.appSettings.siteName;
+	const colorScheme = config.data?.appSettings.colorScheme;
+	const customCss = config.data?.appSettings.customCss;
 
 	useEffect(() => {
-		document.title = settings?.siteName || 'Dashmodo';
-	}, [settings?.siteName]);
+		document.title = siteName || 'Dashmodo';
+	}, [siteName]);
 
 	useEffect(() => {
-		if (!settings) return;
-		setColorScheme(settings.colorScheme === 'system' ? 'auto' : settings.colorScheme);
-	}, [settings?.colorScheme, setColorScheme]);
+		if (!colorScheme) return;
+		setColorScheme(colorScheme === 'system' ? 'auto' : colorScheme);
+	}, [colorScheme, setColorScheme]);
 
 	useEffect(() => {
 		let styleEl = document.getElementById(CUSTOM_CSS_ID) as HTMLStyleElement | null;
-		if (!settings?.customCss) {
+		if (!customCss) {
 			styleEl?.remove();
 			return;
 		}
@@ -30,8 +32,8 @@ export function AppSettingsEffects() {
 			styleEl.id = CUSTOM_CSS_ID;
 			document.head.appendChild(styleEl);
 		}
-		styleEl.textContent = settings.customCss;
-	}, [settings?.customCss]);
+		styleEl.textContent = customCss;
+	}, [customCss]);
 
 	return null;
 }

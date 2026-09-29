@@ -76,6 +76,23 @@ Same onboarding/config behavior as above (including the setup token, printed to 
 instead of `docker compose logs`), persisted to `server/data/dashmodo.json` on disk instead of a
 Docker volume.
 
+### Checks
+
+```bash
+npm run format         # prettier --write (tabs, single quotes, no trailing commas)
+npm run format:check   # what CI runs
+npm run lint           # oxlint, both workspaces
+npm test               # vitest, both workspaces
+npm run check -w server  # type-checks the server including its tests
+npm run build          # type-checks + builds both workspaces
+```
+
+CI (`.github/workflows/ci.yml`) runs all of the above on every pull request, and the Docker
+publish workflow won't run unless it passes on `master`.
+
+Server tests run from a throwaway temp directory (`server/vitest.setup.ts`), so they can never
+read or write your real `server/data/dashmodo.json`.
+
 ## How stack links are resolved
 
 For each stack, in order:

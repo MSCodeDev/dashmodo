@@ -35,10 +35,16 @@ A companion homelab dashboard for [Komodo](https://komo.do). Talks to a Komodo i
 npm run dev            # root: server + client together
 npm run dev -w server  # server only (tsx watch)
 npm run dev -w client  # client only (vite)
-npm run build          # build both workspaces
+npm run build          # build both workspaces (also type-checks)
+npm run format         # prettier --write; format:check is what CI runs
+npm run lint           # oxlint in both workspaces
+npm test               # vitest in both workspaces
+npm run check -w server  # tsc for the server *including* test files (they're excluded from the build tsconfig)
 ```
 
 ## Conventions
 
-- Formatting: tabs, single quotes, no trailing commas (`prettier.config.js` at root).
+- Formatting: tabs, single quotes, no trailing commas (`prettier.config.js` at root). Run `npm run format` before committing; CI fails on `format:check`. JSON/Markdown/YAML aren't covered by the formatter (only `{client,server}/**/*.{ts,tsx,css}` and root `*.js`).
+- Tests: vitest, colocated as `*.test.ts` next to the code (client tests are for pure `lib/` logic, no DOM). **Server tests must never touch the real data file** — `server/vitest.setup.ts` `chdir`s into a fresh temp dir before each test file, because `store.ts` opens `./data/dashmodo.json` relative to the cwd at import time. Don't remove that setup file or point tests at `server/data`. Server test files are excluded from `tsconfig.json` (so they don't land in `dist/` or the Docker image) and type-checked separately via `tsconfig.test.json`. Security fixes get a regression test (e.g. SVG upload rejection, setup-token gate, secret stripping in `/api/config`) — mutation-check new ones by temporarily re-introducing the bug and confirming the test fails.
+- CI: `.github/workflows/ci.yml` (format:check → lint → server check → test → build) runs on PRs and is a required `needs:` of the Docker publish job, so nothing ships from a failing `master`.
 - Git: this repo is local-only (not pushed) unless explicitly asked. Commit messages are short, one-line, imperative — **no AI attribution trailers on commits in this repo.**
